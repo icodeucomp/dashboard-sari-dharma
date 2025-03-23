@@ -64,7 +64,7 @@ export default function Breadcrumbs() {
     <nav className="flex items-center text-sm">
       <ol className="flex items-center flex-wrap">
         <li className="flex items-center">
-          <Link href="/dashboard" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center">
+          <Link href="/dashboard" className="text-orange-600 hover:text-orange-800 dark:text-orange-400 dark:hover:text-orange-300 flex items-center">
             <Icon path={mdiHome} size={0.8} className="mr-1" />
             <span>Dashboard</span>
           </Link>
@@ -88,7 +88,7 @@ export default function Breadcrumbs() {
               ) : (
                 <Link 
                   href={path} 
-                  className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                  className="text-orange-600 hover:text-orange-800 dark:text-orange-400 dark:hover:text-orange-300"
                 >
                   {segmentText}
                 </Link>

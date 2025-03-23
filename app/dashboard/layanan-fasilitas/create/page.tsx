@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 export default function CreateLayananFasilitas() {
   const [namaFasilitas, setNamaFasilitas] = useState("");
   const [deskripsi, setDeskripsi] = useState("");
+  const [layananFasilitas, setLayananFasilitas] = useState("");
   const [fotoHeader, setFotoHeader] = useState<File | null>(null);
   const [fotoLainnya, setFotoLainnya] = useState<File | null>(null);
   const [judulFotoLainnya, setJudulFotoLainnya] = useState("");
@@ -40,7 +41,7 @@ export default function CreateLayananFasilitas() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!namaFasilitas || !deskripsi || !fotoHeader) {
+    if (!namaFasilitas || !deskripsi || !layananFasilitas || !fotoHeader) {
       setError("Semua field wajib diisi.");
       return;
     }
@@ -49,6 +50,7 @@ export default function CreateLayananFasilitas() {
     console.log({
       namaFasilitas,
       deskripsi,
+      layananFasilitas,
       fotoHeader,
       fotoLainnya,
       judulFotoLainnya,
@@ -64,6 +66,7 @@ export default function CreateLayananFasilitas() {
   const handleReset = () => {
     setNamaFasilitas("");
     setDeskripsi("");
+    setLayananFasilitas("");
     setFotoHeader(null);
     setFotoLainnya(null);
     setJudulFotoLainnya("");
@@ -143,48 +146,40 @@ export default function CreateLayananFasilitas() {
           />
         </div>
 
-        {/* Upload Foto Lainnya */}
+        {/* Upload Foto Lainnya dan Judul */}
         <div className="mb-6 flex items-center">
           <label className="block text-gray-700 dark:text-gray-300 font-medium w-1/4">
             Upload Foto Lainnya
           </label>
-          <div className="flex items-center flex-1">
-            <label
-              htmlFor="fotoLainnya"
-              className="flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md cursor-pointer"
-            >
-              <Icon path={mdiUpload} size={1} className="mr-2" />
-              Browse
-            </label>
+          <div className="flex items-center flex-1 gap-4">
+            <div className="flex items-center">
+              <label
+                htmlFor="fotoLainnya"
+                className="flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md cursor-pointer"
+              >
+                <Icon path={mdiUpload} size={1} className="mr-2" />
+                Browse
+              </label>
+              <input
+                id="fotoLainnya"
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleFileChange(e, "lainnya")}
+                className="hidden"
+              />
+              <span className="ml-4 text-sm text-gray-500 dark:text-gray-400">
+                {fotoLainnya ? fotoLainnya.name : "max. 5mb"}
+              </span>
+            </div>
             <input
-              id="fotoLainnya"
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleFileChange(e, "lainnya")}
-              className="hidden"
+              id="judulFotoLainnya"
+              type="text"
+              value={judulFotoLainnya}
+              onChange={(e) => setJudulFotoLainnya(e.target.value)}
+              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              placeholder="Judul Foto Lainnya"
             />
-            <span className="ml-4 text-sm text-gray-500 dark:text-gray-400">
-              {fotoLainnya ? fotoLainnya.name : "max. 5mb"}
-            </span>
           </div>
-        </div>
-
-        {/* Judul Foto Lainnya */}
-        <div className="mb-6 flex items-center">
-          <label
-            htmlFor="judulFotoLainnya"
-            className="block text-gray-700 dark:text-gray-300 font-medium w-1/4"
-          >
-            Judul Foto Lainnya
-          </label>
-          <input
-            id="judulFotoLainnya"
-            type="text"
-            value={judulFotoLainnya}
-            onChange={(e) => setJudulFotoLainnya(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            placeholder="Masukkan judul foto lainnya"
-          />
         </div>
 
         {/* Deskripsi Overview */}
@@ -202,6 +197,24 @@ export default function CreateLayananFasilitas() {
             className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             rows={5}
             placeholder="Masukkan deskripsi overview"
+          ></textarea>
+        </div>
+
+        {/* Layanan Fasilitas */}
+        <div className="mb-6 flex">
+          <label
+            htmlFor="layananFasilitas"
+            className="block text-gray-700 dark:text-gray-300 font-medium w-1/4 pt-2"
+          >
+            Layanan Fasilitas
+          </label>
+          <textarea
+            id="layananFasilitas"
+            value={layananFasilitas}
+            onChange={(e) => setLayananFasilitas(e.target.value)}
+            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            rows={8}
+            placeholder="Masukkan layanan fasilitas"
           ></textarea>
         </div>
 

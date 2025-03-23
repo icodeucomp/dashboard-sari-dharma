@@ -1,22 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import Icon from "@mdi/react";
-import { mdiPencil, mdiTrashCan, mdiStethoscope } from "@mdi/js";
+import Image from "next/image";
 import Link from "next/link";
+import Icon from "@mdi/react";
+import { mdiPencil, mdiTrashCan, mdiFilter } from "@mdi/js";
+import imgCard from "@/app/assets/images/jadwal_dokter/column.png";
 import Pagination from "@/app/components/Pagination";
 
 /**
- * Komponen utama untuk halaman Layanan Spesialis
+ * Komponen utama untuk halaman Jadwal Dokter
  * @returns {JSX.Element}
  */
-export default function LayananSpesialis() {
-  // Data layanan spesialis
-  const layananSpesialis = Array(12).fill({
+export default function JadwalDokter() {
+  // Data jadwal dokter
+  const jadwalDokter = Array(12).fill({
     id: 1,
-    title: "Bedah Plastik",
+    name: "dr. Bambang Sutoyo, Sp.A",
+    specialization: "Heart transplantation",
     description:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
+      "Arrhythmia, Adult congenital heart disease, Congenital heart disease, Common pediatric heart disease",
   });
 
   // State untuk paginasi
@@ -26,7 +29,7 @@ export default function LayananSpesialis() {
   // Mendapatkan data sesuai halaman yang aktif
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = layananSpesialis.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = jadwalDokter.slice(indexOfFirstItem, indexOfLastItem);
 
   /**
    * Fungsi untuk mengganti halaman
@@ -41,42 +44,57 @@ export default function LayananSpesialis() {
       {/* Header halaman */}
       <div className="flex justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Layanan Spesialis
+          Jadwal Dokter
         </h1>
-        <Link
-          href="/dashboard/layanan-spesialis/create"
-          className="bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-md flex items-center"
-        >
-          + Tambah Baru
-        </Link>
+        <div className="flex gap-4">
+          {/* Tombol Filter */}
+          <button
+            className="flex cursor-pointer items-center border border-orange-600 hover:border-orange-700 hover:text-orange-700 text-orange-600 hover:bg-gray-100 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700 font-medium py-2 px-4 rounded-md"
+          >
+            <Icon path={mdiFilter} size={1} className="mr-2" />
+            Filters
+          </button>
+          {/* Tombol Tambah Baru */}
+          <Link
+            href="/dashboard/jadwal-dokter/create"
+            className="bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-md flex items-center"
+          >
+            + Add New
+          </Link>
+        </div>
       </div>
 
-      {/* Grid layanan spesialis */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-6">
-        {currentItems.map((layanan, index) => (
+      {/* Grid jadwal dokter */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-6">
+        {currentItems.map((dokter, index) => (
           <div
             key={index}
             className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden"
           >
-            {/* Header dengan ikon lingkaran */}
-            <div className="flex justify-center items-center py-6">
-              <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
-                <Icon path={mdiStethoscope} size={1.5} className="text-orange-600" />
-              </div>
-            </div>
+            {/* Gambar dokter */}
+            <Image
+              src={imgCard}
+              alt={dokter.name}
+              width={300}
+              height={200}
+              className="w-full h-48 object-cover"
+            />
 
-            {/* Konten layanan */}
+            {/* Konten dokter */}
             <div className="p-4">
               <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
-                {layanan.title}
+                {dokter.name}
               </h2>
+              <p className="text-sm text-orange-600 dark:text-orange-400 font-medium mb-2">
+                {dokter.specialization}
+              </p>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                {layanan.description}
+                {dokter.description}
               </p>
               <div className="flex justify-between">
                 {/* Tombol Edit */}
                 <Link
-                  href={`/dashboard/layanan-spesialis/edit/${layanan.id}`}
+                  href={`/dashboard/jadwal-dokter/edit/${dokter.id}`}
                   className="flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 text-sm font-medium py-2 px-4 rounded-md"
                 >
                   Edit
@@ -85,7 +103,7 @@ export default function LayananSpesialis() {
 
                 {/* Tombol Hapus */}
                 <button
-                  onClick={() => console.log(`Hapus layanan ${layanan.id}`)}
+                  onClick={() => console.log(`Hapus jadwal dokter ${dokter.id}`)}
                   className="flex cursor-pointer items-center border border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700 text-sm font-medium py-2 px-4 rounded-md"
                 >
                   Delete
@@ -100,7 +118,7 @@ export default function LayananSpesialis() {
       {/* Pagination */}
       <Pagination
         currentPage={currentPage}
-        totalItems={layananSpesialis.length}
+        totalItems={jadwalDokter.length}
         itemsPerPage={itemsPerPage}
         onPageChange={handlePageChange}
         showInfo={true}
