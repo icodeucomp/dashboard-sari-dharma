@@ -69,7 +69,7 @@ export default function Header({ toggleSidebar, isSidebarOpen }: {
         >
           <Icon path={mdiMenu} size={1} />
         </button>
-        <form onSubmit={handleSearch} className="flex items-center flex-1 max-w-md">
+        <form onSubmit={handleSearch} className="hidden items-center flex-1 max-w-md"> 
           <input
             type="text"
             value={searchQuery}

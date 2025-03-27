@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Icon from "@mdi/react";
-import { mdiPencil, mdiTrashCan, mdiStethoscope } from "@mdi/js";
+import { mdiPencil, mdiTrashCan, mdiStethoscope, mdiMagnify } from "@mdi/js";
 import Link from "next/link";
 import Pagination from "@/app/components/Pagination";
 
@@ -11,6 +11,10 @@ import Pagination from "@/app/components/Pagination";
  * @returns {JSX.Element}
  */
 export default function LayananSpesialis() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+
   // Data layanan spesialis
   const layananSpesialis = Array(12).fill({
     id: 1,
@@ -19,14 +23,15 @@ export default function LayananSpesialis() {
       "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
   });
 
-  // State untuk paginasi
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  // Filter data berdasarkan query pencarian
+  const filteredItems = layananSpesialis.filter((item) =>
+    item.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   // Mendapatkan data sesuai halaman yang aktif
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = layananSpesialis.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
 
   /**
    * Fungsi untuk mengganti halaman
@@ -36,13 +41,39 @@ export default function LayananSpesialis() {
     setCurrentPage(pageNumber);
   };
 
+  /**
+   * Fungsi untuk menangani pencarian
+   * @param {React.FormEvent} e - Event form
+   */
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCurrentPage(1); // Reset ke halaman pertama setelah pencarian
+  };
+
   return (
     <div className="p-6">
       {/* Header halaman */}
       <div className="flex justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Layanan Spesialis
-        </h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+            Layanan Spesialis
+          </h1>
+          <form onSubmit={handleSearch} className="flex items-center flex-1 max-w-md">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by title"
+              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            />
+            <button
+              type="submit"
+              className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-r-md"
+            >
+              <Icon path={mdiMagnify} size={1} />
+            </button>
+          </form>
+        </div>
         <Link
           href="/dashboard/layanan-spesialis/create"
           className="bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-md flex items-center"
@@ -100,7 +131,7 @@ export default function LayananSpesialis() {
       {/* Pagination */}
       <Pagination
         currentPage={currentPage}
-        totalItems={layananSpesialis.length}
+        totalItems={filteredItems.length}
         itemsPerPage={itemsPerPage}
         onPageChange={handlePageChange}
         showInfo={true}

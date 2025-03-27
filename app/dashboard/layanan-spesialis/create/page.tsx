@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import IconPicker from "@/app/components/IconPicker";
+import { mdiDelete, mdiPlus, mdiRestore } from "@mdi/js";
 import Icon from "@mdi/react";
-import { mdiUpload, mdiDelete, mdiPlus, mdiRestore } from "@mdi/js";
 import { useRouter } from "next/navigation";
 
 /**
@@ -13,7 +14,7 @@ export default function CreateLayananSpesialis() {
   const [namaLayanan, setNamaLayanan] = useState("");
   const [deskripsi, setDeskripsi] = useState("");
   const [dokterTerkait, setDokterTerkait] = useState([""]);
-  const [foto, setFoto] = useState<File | null>(null);
+  const [selectedIcon, setSelectedIcon] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
 
@@ -22,16 +23,6 @@ export default function CreateLayananSpesialis() {
     "dr. Siti Aminah, Sp.B",
     "dr. Rudi Hartono, Sp.C",
   ];
-
-  /**
-   * Fungsi untuk menangani unggahan file
-   * @param {React.ChangeEvent<HTMLInputElement>} e - Event input file
-   */
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFoto(e.target.files[0]);
-    }
-  };
 
   /**
    * Fungsi untuk menambah input dokter terkait
@@ -50,6 +41,13 @@ export default function CreateLayananSpesialis() {
   };
 
   /**
+   * Fungsi untuk mereset semua field dokter spesialis
+   */
+  const handleResetDokter = () => {
+    setDokterTerkait([""]);
+  };
+
+  /**
    * Fungsi untuk mengubah nilai dokter terkait
    * @param {number} index - Index dokter terkait
    * @param {string} value - Nilai baru
@@ -61,20 +59,13 @@ export default function CreateLayananSpesialis() {
   };
 
   /**
-   * Fungsi untuk mereset semua field dokter spesialis
-   */
-  const handleResetDokter = () => {
-    setDokterTerkait([""]);
-  };
-
-  /**
    * Fungsi untuk menangani pengiriman formulir
    * @param {React.FormEvent} e - Event formulir
    */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!namaLayanan || !deskripsi || !foto || dokterTerkait.some((dokter) => !dokter)) {
+    if (!namaLayanan || !deskripsi || !selectedIcon || dokterTerkait.some((dokter) => !dokter)) {
       setError("Semua field wajib diisi.");
       return;
     }
@@ -84,7 +75,7 @@ export default function CreateLayananSpesialis() {
       namaLayanan,
       deskripsi,
       dokterTerkait,
-      foto,
+      selectedIcon,
     });
 
     // Redirect ke halaman layanan spesialis setelah berhasil
@@ -98,7 +89,7 @@ export default function CreateLayananSpesialis() {
     setNamaLayanan("");
     setDeskripsi("");
     setDokterTerkait([""]);
-    setFoto(null);
+    setSelectedIcon("");
     setError("");
   };
 
@@ -107,13 +98,8 @@ export default function CreateLayananSpesialis() {
       {/* Header halaman */}
       <div className="flex justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-        Tambah Layanan Spesialis
+          Tambah Layanan Spesialis
         </h1>
-        <div
-          className="py-2 px-4 opacity-0"
-        >
-          -
-        </div>
       </div>
 
       {/* Form Tambah Layanan */}
@@ -128,29 +114,13 @@ export default function CreateLayananSpesialis() {
           </div>
         )}
 
-        {/* Upload Foto */}
+        {/* Pilih Ikon */}
         <div className="mb-6 flex items-center">
           <label className="block text-gray-700 dark:text-gray-300 font-medium w-1/4">
-            Upload Icon
+            Pilih Ikon
           </label>
-          <div className="flex items-center flex-1">
-            <label
-              htmlFor="foto"
-              className="flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md cursor-pointer"
-            >
-              <Icon path={mdiUpload} size={1} className="mr-2" />
-              Browse
-            </label>
-            <input
-              id="foto"
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-            <span className="ml-4 text-sm text-gray-500 dark:text-gray-400">
-              {foto ? foto.name : "max. 5mb"}
-            </span>
+          <div className="flex-1">
+            <IconPicker selectedIcon={selectedIcon} onSelect={setSelectedIcon} />
           </div>
         </div>
 

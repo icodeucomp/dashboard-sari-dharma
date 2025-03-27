@@ -80,13 +80,6 @@ export default function CreateLayananFasilitas() {
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
           Tambah Layanan & Fasilitas
         </h1>
-        <button
-          type="submit"
-          className="bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-6 rounded-md flex items-center"
-        >
-          <Icon path={mdiUpload} size={1} className="mr-2" />
-          Publish
-        </button>
       </div>
 
       {/* Form Tambah Layanan */}
