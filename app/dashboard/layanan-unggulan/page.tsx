@@ -134,7 +134,7 @@ export default function LayananUnggulan() {
                 {/* Tombol Hapus */}
                 <button
                   onClick={() => console.log(`Hapus layanan ${layanan.id}`)}
-                  className="flex cursor-pointer items-center border border-red-600 text-red-600 hover:bg-red-600 hover:text-white text-sm font-medium py-2 px-4 rounded-md"
+                  className="flex cursor-pointer items-center border border-orange-600 text-red-600 hover:bg-orange-600 hover:text-white text-sm font-medium py-2 px-4 rounded-md"
                 >
                   Hapus
                   <Icon path={mdiTrashCan} size={0.8} className="ml-2" />

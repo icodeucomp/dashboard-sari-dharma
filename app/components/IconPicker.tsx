@@ -131,7 +131,7 @@ export default function IconPicker({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md"
+        className="flex cursor-pointer items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md"
       >
         {selectedIcon && (
           <Icon path={selectedIcon || ""} size={1} className="mr-2" />
@@ -163,7 +163,7 @@ export default function IconPicker({
                 key={icon.name}
                 type="button"
                 onClick={() => handleSelect(icon.path)}
-                className="flex items-center justify-center border border-gray-300 dark:border-gray-700 rounded-md p-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="flex cursor-pointer items-center justify-center border border-gray-300 dark:border-gray-700 rounded-md p-2 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <Icon
                   path={icon.path}

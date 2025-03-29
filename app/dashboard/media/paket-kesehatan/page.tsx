@@ -4,41 +4,33 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Icon from "@mdi/react";
-import { mdiPencil, mdiTrashCan, mdiMagnify } from "@mdi/js";
-import img1 from "@/app/assets/images/layanan_fasilitas/column.png";
+import { mdiPencil, mdiTrashCan, mdiFilter, mdiMagnify } from "@mdi/js";
+import imgCard from "@/app/assets/images/media/paket-kesehatan/column.png";
 import Pagination from "@/app/components/Pagination";
 
 /**
- * Komponen utama untuk halaman Layanan & Fasilitas
+ * Komponen utama untuk halaman Paket Kesehatan
  * @returns {JSX.Element}
  */
-export default function LayananFasilitas() {
-  const [searchQuery, setSearchQuery] = useState("");
+export default function PaketKesehatan() {
+  // Data paket kesehatan
+  const paketKesehatan = Array(12).fill({
+    id: 1,
+    title: "Promo Paket MCU Basix",
+    description: "*Berlaku s/d 31 Desember 2025",
+  });
+
+  // State untuk paginasi
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  // Data layanan fasilitas
-  const layananFasilitas = [
-    { id: 1, title: "Laboratorium", image: img1 },
-    { id: 2, title: "Radiologi", image: img1 },
-    { id: 3, title: "Farmasi", image: img1 },
-    { id: 4, title: "Laboratarium", image: img1 },
-    { id: 5, title: "Laboratarium", image: img1 },
-    { id: 6, title: "Laboratarium", image: img1 },
-    { id: 7, title: "Laboratarium", image: img1 },
-    { id: 8, title: "Laboratarium", image: img1 },
-    { id: 9, title: "Laboratarium", image: img1 },
-  ];
-
-  // Filter data berdasarkan query pencarian
-  const filteredItems = layananFasilitas.filter((item) =>
-    item.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // State untuk input pencarian
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Mendapatkan data sesuai halaman yang aktif
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = paketKesehatan.slice(indexOfFirstItem, indexOfLastItem);
 
   /**
    * Fungsi untuk mengganti halaman
@@ -49,12 +41,13 @@ export default function LayananFasilitas() {
   };
 
   /**
-   * Fungsi untuk menangani pencarian
-   * @param {React.FormEvent} e - Event form
+   * Fungsi untuk menangani submit pencarian
+   * @param {React.FormEvent<HTMLFormElement>} event - Event submit form
    */
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setCurrentPage(1); // Reset ke halaman pertama setelah pencarian
+  const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    console.log("Search query:", searchQuery);
+    // Tambahkan logika pencarian di sini
   };
 
   return (
@@ -63,8 +56,9 @@ export default function LayananFasilitas() {
       <div className="flex justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-            Layanan & Fasilitas
+            Paket Kesehatan
           </h1>
+          {/* Search Box */}
           <form onSubmit={handleSearch} className="flex items-center flex-1 max-w-md">
             <input
               type="text"
@@ -81,39 +75,55 @@ export default function LayananFasilitas() {
             </button>
           </form>
         </div>
-        <Link
-          href="/dashboard/layanan-fasilitas/create"
-          className="bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-md flex items-center"
-        >
-          + Tambah Baru
-        </Link>
+        <div className="flex gap-4">
+          {/* Tombol Filter */}
+          <button
+            className="flex cursor-pointer items-center border border-orange-600 hover:border-orange-700 hover:text-orange-700 text-orange-600 hover:bg-gray-100 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700 font-medium py-2 px-4 rounded-md"
+          >
+            <Icon path={mdiFilter} size={1} className="mr-2" />
+            Filters
+          </button>
+          {/* Tombol Tambah Baru */}
+          <Link
+            href="/dashboard/media/paket-kesehatan/create"
+            className="bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-md flex items-center"
+          >
+            + Add New
+          </Link>
+        </div>
       </div>
 
-      {/* Grid layanan fasilitas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-6">
-        {currentItems.map((layanan) => (
+      {/* Grid paket kesehatan */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-6">
+        {currentItems.map((paket, index) => (
           <div
-            key={layanan.id}
+            key={index}
             className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden"
           >
-            {/* Gambar layanan */}
-            <Image
-              src={layanan.image}
-              alt={layanan.title}
-              width={300}
-              height={200}
-              className="w-full h-48 object-cover"
-            />
+            {/* Gambar paket */}
+            <div className="relative">
+              <Image
+                src={imgCard}
+                alt={paket.title}
+                width={300}
+                height={200}
+                className="w-full h-48 object-cover"
+              />
+              {/* Informasi berlaku */}
+              <div className="absolute bottom-0 left-0 bg-[#FB973B] text-white text-xs font-medium px-2 py-1">
+                {paket.description}
+              </div>
+            </div>
 
-            {/* Konten layanan */}
+            {/* Konten paket */}
             <div className="p-4">
               <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-                {layanan.title}
+                {paket.title}
               </h2>
               <div className="flex justify-between">
                 {/* Tombol Edit */}
                 <Link
-                  href={`/dashboard/layanan-fasilitas/edit/${layanan.id}`}
+                  href={`/dashboard/media/paket-kesehatan/edit/${paket.id}`}
                   className="flex items-center bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium py-2 px-4 rounded-md"
                 >
                   Edit
@@ -122,10 +132,10 @@ export default function LayananFasilitas() {
 
                 {/* Tombol Hapus */}
                 <button
-                  onClick={() => console.log(`Hapus layanan ${layanan.id}`)}
+                  onClick={() => console.log(`Hapus paket kesehatan ${paket.id}`)}
                   className="flex cursor-pointer items-center border border-orange-600 text-red-600 hover:bg-orange-600 hover:text-white text-sm font-medium py-2 px-4 rounded-md"
                 >
-                  Hapus
+                  Delete
                   <Icon path={mdiTrashCan} size={0.8} className="ml-2" />
                 </button>
               </div>
@@ -137,7 +147,7 @@ export default function LayananFasilitas() {
       {/* Pagination */}
       <Pagination
         currentPage={currentPage}
-        totalItems={filteredItems.length}
+        totalItems={paketKesehatan.length}
         itemsPerPage={itemsPerPage}
         onPageChange={handlePageChange}
         showInfo={true}

@@ -23,9 +23,9 @@ export default function Breadcrumbs() {
   // Skip if we're on the main dashboard page
   if (pathname === "/dashboard") {
     return (
-      <div className="flex items-center text-gray-500 dark:text-gray-400 text-sm">
+      <div className="flex items-center text-orange-600 dark:text-gray-400 text-sm">
         <Icon path={mdiHome} size={0.8} className="mr-1" />
-        <span>Dashboard</span>
+        <span className="pt-1">Dashboard</span>
       </div>
     );
   }
@@ -66,7 +66,7 @@ export default function Breadcrumbs() {
         <li className="flex items-center">
           <Link href="/dashboard" className="text-orange-600 hover:text-orange-800 dark:text-orange-400 dark:hover:text-orange-300 flex items-center">
             <Icon path={mdiHome} size={0.8} className="mr-1" />
-            <span>Dashboard</span>
+            <span className="flex items-center pt-1">Dashboard</span>
           </Link>
         </li>
         
@@ -78,17 +78,17 @@ export default function Breadcrumbs() {
           const segmentText = pathNames[segment] || formatSegmentText(segment);
           
           return (
-            <li key={path} className="flex items-center">
+            <li key={path} className="flex items-center pt-1">
               <Icon path={mdiChevronRight} size={0.8} className="mx-2 text-gray-500 dark:text-gray-400" />
               
               {isLast ? (
-                <span className="text-gray-700 dark:text-gray-300">
+                <span className="text-gray-700 dark:text-gray-300 flex items-center">
                   {segmentText}
                 </span>
               ) : (
                 <Link 
                   href={path} 
-                  className="text-orange-600 hover:text-orange-800 dark:text-orange-400 dark:hover:text-orange-300"
+                  className="text-orange-600 hover:text-orange-800 dark:text-orange-400 dark:hover:text-orange-300 flex items-center"
                 >
                   {segmentText}
                 </Link>

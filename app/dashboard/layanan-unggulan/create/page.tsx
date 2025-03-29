@@ -1,9 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import Icon from "@mdi/react";
 import { mdiUpload } from "@mdi/js";
 import { useRouter } from "next/navigation";
+
+// Lazy load WYSIWYG editor
+const Editor = dynamic(() => import("@/app/components/WysiwygEditor"), { ssr: false });
 
 /**
  * Komponen utama untuk halaman Tambah Layanan Unggulan
@@ -64,13 +68,9 @@ export default function CreateLayananUnggulan() {
       {/* Header halaman */}
       <div className="flex justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-        Tambah Layanan Unggulan
+          Tambah Layanan Unggulan
         </h1>
-        <div
-          className="py-2 px-4 opacity-0"
-        >
-          -
-        </div>
+        <div className="py-2 px-4 opacity-0">-</div>
       </div>
 
       {/* Form Tambah Layanan */}
@@ -131,21 +131,18 @@ export default function CreateLayananUnggulan() {
         </div>
 
         {/* Deskripsi */}
-        <div className="mb-6 flex">
+        <div className="mb-6">
           <label
             htmlFor="deskripsi"
-            className="block text-gray-700 dark:text-gray-300 font-medium w-1/4 pt-2"
+            className="block text-gray-700 dark:text-gray-300 font-medium mb-2"
           >
             Deskripsi
           </label>
-          <textarea
-            id="deskripsi"
+          <Editor
             value={deskripsi}
-            onChange={(e) => setDeskripsi(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            rows={5}
+            onChange={(value: string) => setDeskripsi(value)}
             placeholder="Masukkan deskripsi layanan"
-          ></textarea>
+          />
         </div>
 
         {/* Tombol Aksi */}

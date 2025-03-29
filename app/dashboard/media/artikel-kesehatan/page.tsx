@@ -4,22 +4,21 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Icon from "@mdi/react";
-import { mdiPencil, mdiTrashCan, mdiFilter, mdiMagnify } from "@mdi/js";
-import imgCard from "@/app/assets/images/jadwal_dokter/column.png";
+import { mdiPencil, mdiTrashCan, mdiFilter, mdiMagnify, mdiTag, mdiCalendar } from "@mdi/js";
+import imgCard from "@/app/assets/images/media/artikel-kesehatan/column.png";
 import Pagination from "@/app/components/Pagination";
 
 /**
- * Komponen utama untuk halaman Jadwal Dokter
+ * Komponen utama untuk halaman Artikel Kesehatan
  * @returns {JSX.Element}
  */
-export default function JadwalDokter() {
-  // Data jadwal dokter
-  const jadwalDokter = Array(12).fill({
+export default function ArtikelKesehatan() {
+  // Data artikel kesehatan
+  const artikelKesehatan = Array(12).fill({
     id: 1,
-    name: "dr. Bambang Sutoyo, Sp.A",
-    specialization: "Heart transplantation",
-    description:
-      "Arrhythmia, Adult congenital heart disease, Congenital heart disease, Common pediatric heart disease",
+    title: "Peresmian Gedung Baru dengan Fasilitas Rawat Inap Modern",
+    category: "Edukasi Kesehatan",
+    date: "22 January 2024",
   });
 
   // State untuk paginasi
@@ -32,7 +31,7 @@ export default function JadwalDokter() {
   // Mendapatkan data sesuai halaman yang aktif
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = jadwalDokter.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = artikelKesehatan.slice(indexOfFirstItem, indexOfLastItem);
 
   /**
    * Fungsi untuk mengganti halaman
@@ -58,7 +57,7 @@ export default function JadwalDokter() {
       <div className="flex justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-            Jadwal Dokter
+            Artikel Kesehatan
           </h1>
           {/* Search Box */}
           <form onSubmit={handleSearch} className="flex items-center flex-1 max-w-md">
@@ -87,7 +86,7 @@ export default function JadwalDokter() {
           </button>
           {/* Tombol Tambah Baru */}
           <Link
-            href="/dashboard/jadwal-dokter/create"
+            href="/dashboard/media/artikel-kesehatan/create"
             className="bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-md flex items-center"
           >
             + Add New
@@ -95,38 +94,44 @@ export default function JadwalDokter() {
         </div>
       </div>
 
-      {/* Grid jadwal dokter */}
+      {/* Grid artikel kesehatan */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-6">
-        {currentItems.map((dokter, index) => (
+        {currentItems.map((artikel, index) => (
           <div
             key={index}
-            className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden"
+            className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden"
           >
-            {/* Gambar dokter */}
+            {/* Gambar artikel */}
             <Image
               src={imgCard}
-              alt={dokter.name}
+              alt={artikel.title}
               width={300}
               height={200}
               className="w-full h-48 object-cover"
             />
 
-            {/* Konten dokter */}
+            {/* Kategori */}
+            <div className="px-4 py-2 mt-4">
+              <div className="inline-flex items-center gap-2 bg-[#FB973B] text-white text-sm font-medium px-3 py-1 rounded-md">
+                <Icon path={mdiTag} size={0.8} />
+                {artikel.category}
+              </div>
+            </div>
+
+            {/* Konten artikel */}
             <div className="p-4">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
-                {dokter.name}
+              <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-3">
+                <Icon path={mdiCalendar} size={0.8} className="mr-2" />
+                {artikel.date}
+              </div>
+              <h2 className="text-lg leading-[27px] font-semibold text-gray-800 dark:text-white mb-4">
+                {artikel.title}
               </h2>
-              <p className="text-sm text-orange-600 dark:text-orange-400 font-medium mb-2">
-                {dokter.specialization}
-              </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                {dokter.description}
-              </p>
               <div className="flex justify-between">
                 {/* Tombol Edit */}
                 <Link
-                  href={`/dashboard/jadwal-dokter/edit/${dokter.id}`}
-                  className="flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 text-sm font-medium py-2 px-4 rounded-md"
+                  href={`/dashboard/media/artikel-kesehatan/edit/${artikel.id}`}
+                  className="flex items-center bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium py-2 px-4 rounded-md"
                 >
                   Edit
                   <Icon path={mdiPencil} size={0.8} className="ml-2" />
@@ -134,8 +139,8 @@ export default function JadwalDokter() {
 
                 {/* Tombol Hapus */}
                 <button
-                  onClick={() => console.log(`Hapus jadwal dokter ${dokter.id}`)}
-                  className="flex cursor-pointer items-center border border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700 text-sm font-medium py-2 px-4 rounded-md"
+                  onClick={() => console.log(`Hapus artikel ${artikel.id}`)}
+                  className="flex cursor-pointer items-center border border-orange-600 text-red-600 hover:bg-orange-600 hover:text-white text-sm font-medium py-2 px-4 rounded-md"
                 >
                   Delete
                   <Icon path={mdiTrashCan} size={0.8} className="ml-2" />
@@ -149,7 +154,7 @@ export default function JadwalDokter() {
       {/* Pagination */}
       <Pagination
         currentPage={currentPage}
-        totalItems={jadwalDokter.length}
+        totalItems={artikelKesehatan.length}
         itemsPerPage={itemsPerPage}
         onPageChange={handlePageChange}
         showInfo={true}
