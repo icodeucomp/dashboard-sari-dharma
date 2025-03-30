@@ -18,6 +18,7 @@ import {
   mdiCertificate,
   mdiChevronDown,
   mdiChevronUp,
+  mdiClose,
 } from "@mdi/js";
 import Logo from "@/app/assets/images/logo.webp";
 
@@ -105,9 +106,13 @@ const NavItem = ({ icon, title, href, isActive, isOpen, subItems = [] }: {
 /**
  * Komponen sidebar utama
  * @param {boolean} isOpen - Status sidebar terbuka/tertutup
+ * @param {Function} toggleSidebar - Fungsi untuk toggle sidebar
  * @returns {JSX.Element}
  */
-export default function Sidebar({ isOpen }: { isOpen: boolean }) {
+export default function Sidebar({ isOpen, toggleSidebar }: { 
+  isOpen: boolean; 
+  toggleSidebar: () => void;
+}) {
   const pathname = usePathname();
 
   // Daftar menu navigasi
@@ -137,14 +142,14 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
   return (
     <aside 
       className={`
-        fixed left-0 top-0 z-40 h-screen transition-all duration-300
+        fixed left-0 top-0 z-40 min-h-screen transition-all duration-300
         ${isOpen ? 'w-64' : 'w-20'} 
         bg-[#C75000] text-white overflow-y-auto
       `}
     >
       {/* Header dengan Logo */}
-      <div className={`flex items-center h-16 px-4 border-b border-[#e05d00] ${!isOpen && 'justify-center'}`}>
-        <div className="flex items-center justify-center w-full">
+      <div className={`flex items-center justify-between h-16 px-4 border-b border-[#e05d00]`}>
+        <div className={`flex items-center justify-center w-full`}>
           <Image
             src={Logo}
             alt="Klinik Sari Dharma"
@@ -153,6 +158,17 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
             className="rounded-full"
           />
         </div>
+        
+        {/* Tombol tutup untuk mode mobile */}
+        {isOpen && (
+          <button 
+            onClick={toggleSidebar}
+            className="md:hidden text-white hover:text-gray-200 p-1"
+            aria-label="Tutup Sidebar"
+          >
+            <Icon path={mdiClose} size={1} />
+          </button>
+        )}
       </div>
 
       {/* Menu Navigasi */}

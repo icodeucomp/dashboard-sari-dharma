@@ -95,7 +95,7 @@ export default function ArtikelKesehatan() {
       </div>
 
       {/* Grid artikel kesehatan */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 3xl:grid-cols-6 gap-6">
         {currentItems.map((artikel, index) => (
           <div
             key={index}
@@ -124,7 +124,7 @@ export default function ArtikelKesehatan() {
                 <Icon path={mdiCalendar} size={0.8} className="mr-2" />
                 {artikel.date}
               </div>
-              <h2 className="text-lg leading-[27px] font-semibold text-gray-800 dark:text-white mb-4">
+              <h2 className="text-sm md:text-md lg:text-lg leading-[25px] font-semibold text-gray-800 dark:text-white mb-4">
                 {artikel.title}
               </h2>
               <div className="flex justify-between">

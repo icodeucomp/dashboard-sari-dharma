@@ -27,9 +27,9 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900">
       {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} />
+      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
 
       {/* Main Content */}
       <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarOpen ? 'md:ml-64' : 'md:ml-20'}`}>
@@ -37,7 +37,7 @@ export default function DashboardLayout({
         <Header toggleSidebar={toggleSidebar} isSidebarOpen={sidebarOpen} />
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-auto p-4 md:p-6">
+        <main className="flex-1 p-4 md:p-6 overflow-auto" style={{ maxHeight: 'calc(100vh - 65px)' }}>
           {/* Breadcrumbs */}
           <Breadcrumbs />
           
