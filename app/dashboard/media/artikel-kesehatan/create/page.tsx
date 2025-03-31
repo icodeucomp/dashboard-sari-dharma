@@ -1,9 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Icon from "@mdi/react";
 import { mdiPlus, mdiDelete } from "@mdi/js";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+import type { WysiwygEditorHandle } from "@/app/components/WysiwygEditor";
+
+// Import komponen WysiwygEditor secara dynamic untuk menghindari error SSR
+const WysiwygEditor = dynamic(() => import('@/app/components/WysiwygEditor'), { 
+  ssr: false,
+  loading: () => <div className="h-[300px] w-full bg-gray-100 dark:bg-gray-800 animate-pulse"></div>,
+});
 
 /**
  * Halaman untuk menambahkan Artikel Kesehatan baru
@@ -15,6 +23,7 @@ export default function AddArtikelKesehatan() {
   const [judul, setJudul] = useState("");
   const [konten, setKonten] = useState("");
   const [dokterTerkait, setDokterTerkait] = useState([""]);
+  const editorRef = useRef<WysiwygEditorHandle>(null);
 
   const dokterOptions = [
     "dr. Bambang Sutoyo, Sp.A",
@@ -57,6 +66,9 @@ export default function AddArtikelKesehatan() {
     setJudul("");
     setKonten("");
     setDokterTerkait([""]);
+    if (editorRef.current) {
+      editorRef.current.setContent("");
+    }
   };
 
   /**
@@ -65,10 +77,14 @@ export default function AddArtikelKesehatan() {
    */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Ambil konten editor dari ref
+    const editorContent = editorRef.current?.getContent() || "";
+    
     console.log({
       kategori,
       judul,
-      konten,
+      konten: editorContent,
       dokterTerkait,
     });
     // Tambahkan logika pengiriman data di sini
@@ -133,21 +149,19 @@ export default function AddArtikelKesehatan() {
         </div>
 
         {/* Konten */}
-        <div className="mb-6">
+        <div className="mb-12"> {/* Margin-bottom untuk editor */}
           <label
             htmlFor="konten"
             className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
           >
             Content
           </label>
-          <textarea
-            id="konten"
+          <WysiwygEditor 
+            ref={editorRef} 
             value={konten}
-            onChange={(e) => setKonten(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            rows={5}
+            onChange={(content) => setKonten(content)}
             placeholder="Masukkan konten artikel"
-          ></textarea>
+          />
         </div>
 
         {/* Dokter Terkait */}
