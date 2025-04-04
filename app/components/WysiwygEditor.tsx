@@ -93,12 +93,14 @@ const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>(
           if (typeof quillRef.current.destroy === 'function') {
             if (quillRef.current && editorRef.current) {
               quillRef.current.off('text-change');
+              // eslint-disable-next-line react-hooks/exhaustive-deps
               editorRef.current.innerHTML = ''; // Clear the editor's DOM
             }
           }
           quillRef.current = null;
         }
       };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [placeholder]);
 
     // Update konten editor ketika value prop berubah

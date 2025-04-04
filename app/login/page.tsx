@@ -29,7 +29,7 @@ export default function Login() {
       
       // Redirect to dashboard after successful login
       router.push("/dashboard");
-    } catch (err) {
+    } catch {
       setError("Login gagal. Silakan periksa kembali username dan password Anda.");
     } finally {
       setIsLoading(false);
