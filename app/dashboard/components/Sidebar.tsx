@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -40,11 +40,19 @@ const NavItem = ({ icon, title, href, isActive, isOpen, subItems = [] }: {
   isOpen: boolean;
   subItems?: { title: string; href: string; icon: string }[];
 }) => {
-  const [expanded, setExpanded] = useState(false);
   const pathname = usePathname();
 
   // Cek apakah ada subitem yang aktif
   const hasActiveChild = subItems.some((item) => pathname === item.href);
+
+  // State untuk mengatur apakah submenu terbuka
+  const [expanded, setExpanded] = useState(hasActiveChild);
+
+  useEffect(() => {
+    if (hasActiveChild) {
+      setExpanded(true); // Buka submenu jika ada subitem aktif
+    }
+  }, [hasActiveChild]);
 
   return (
     <div className="mb-1">
