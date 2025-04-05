@@ -142,8 +142,15 @@ export default function Header({ toggleSidebar, isSidebarOpen }: {
               </Link>
               <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
               <button 
-                onClick={handleLogout}
-                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:text-red-400 dark:hover:bg-gray-700 flex items-center"
+                onClick={() => {
+                  // Logout langsung melalui dropdown
+                  // Hapus token dan redirect ke login
+                  document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; max-age=0; samesite=lax;';
+                  localStorage.removeItem('auth_token');
+                  localStorage.removeItem('user');
+                  router.push('/login');
+                }}
+                className="w-full cursor-pointer text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:text-red-400 dark:hover:bg-gray-700 flex items-center"
               >
                 <Icon path={mdiLogout} size={0.8} className="mr-2" />
                 Logout

@@ -62,12 +62,27 @@ export const getUser = (): User | null => {
 
 /**
  * Fungsi untuk logout
- * Menghapus token dan data pengguna dari penyimpanan lokal
+ * Menghapus token dan data pengguna dari penyimpanan lokal dan cookie
+ * @param callback - Fungsi callback opsional yang dipanggil setelah logout
  */
-export const logout = () => {
+export const logout = (callback?: () => void) => {
   if (typeof window === 'undefined') return;
+  
+  // Hapus dari localStorage
   localStorage.removeItem('auth_token');
   localStorage.removeItem('user');
+  
+  // Hapus cookie dengan cara yang lebih aman
+  // Metode 1: Hapus dengan set expired
+  document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; max-age=0; samesite=lax;';
+  
+  // Metode 2: Timpa dengan string kosong
+  document.cookie = 'auth_token=; path=/;';
+  
+  // Jika ada callback, panggil
+  if (callback) {
+    callback();
+  }
 };
 
 /**

@@ -46,13 +46,18 @@ export default function Login() {
         // Menyimpan token di localStorage
         localStorage.setItem('auth_token', response.data.token);
         
+        // Menyimpan token di cookie untuk middleware
+        document.cookie = `auth_token=${response.data.token}; path=/; max-age=${60 * 60 * 24 * 7}`; // 7 hari
+        
         // Menyimpan data user di localStorage jika rememberMe dicentang
         if (rememberMe) {
           localStorage.setItem('user', JSON.stringify(response.data.user));
         }
         
         // Redirect ke dashboard setelah login berhasil
-        router.push("/dashboard");
+        const params = new URLSearchParams(window.location.search);
+        const from = params.get('from') || '/dashboard';
+        router.push(from);
       } else {
         setError("Format respons login tidak valid.");
       }
