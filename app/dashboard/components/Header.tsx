@@ -46,11 +46,6 @@ export default function Header({ toggleSidebar, isSidebarOpen }: {
     };
   }, []);
 
-  // Fungsi untuk logout
-  const handleLogout = () => {
-    router.push("/login");
-  };
-
   // Fungsi untuk menangani pencarian
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

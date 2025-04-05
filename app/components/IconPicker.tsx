@@ -3,11 +3,21 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import Icon from "@mdi/react";
+import * as MDIIcons from "@mdi/js";
+
+/**
+ * Fungsi untuk mendapatkan path ikon berdasarkan nama ikon secara dinamis
+ * @param {string} iconName - Nama ikon, contoh: 'mdiLungs'
+ * @returns {string} Path ikon atau undefined jika tidak ditemukan
+ */
+const getIconPath = (iconName: string) => {
+  return (MDIIcons as {[key: string]: string})[iconName];
+};
 
 /**
  * Komponen untuk memilih ikon dari daftar yang tersedia
  * @param {Object} props - Properti komponen
- * @param {string} props.selectedIcon - Ikon yang dipilih
+ * @param {string} props.selectedIcon - Ikon yang dipilih (name dari ikon)
  * @param {Function} props.onSelect - Fungsi untuk menangani pemilihan ikon
  * @returns {JSX.Element}
  */
@@ -23,6 +33,7 @@ export default function IconPicker({
   const [query, setQuery] = useState("");
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [selectedIconPath, setSelectedIconPath] = useState<string>(""); // Tambahkan state untuk menyimpan path ikon
   const dropdownRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -42,6 +53,14 @@ export default function IconPicker({
       });
       setIcons(reset ? response.data : [...icons, ...response.data]);
       setOffset(reset ? LIMIT : offset + LIMIT);
+      
+      // Temukan path untuk selectedIcon jika belum ditetapkan
+      if (selectedIcon && !selectedIconPath) {
+        const icon = response.data.find((i: { name: string; path: string }) => i.name === selectedIcon);
+        if (icon) {
+          setSelectedIconPath(icon.path);
+        }
+      }
     } catch (error) {
       console.error("Gagal memuat ikon:", error);
     } finally {
@@ -90,10 +109,12 @@ export default function IconPicker({
 
   /**
    * Fungsi untuk menangani pemilihan ikon
-   * @param {string} icon - Ikon yang dipilih
+   * @param {string} iconName - Nama ikon yang dipilih
+   * @param {string} iconPath - Path ikon yang dipilih
    */
-  const handleSelect = (icon: string) => {
-    onSelect(icon);
+  const handleSelect = (iconName: string, iconPath: string) => {
+    onSelect(iconName); // Sekarang mengirimkan nama ikon, bukan path
+    setSelectedIconPath(iconPath); // Simpan path untuk ditampilkan dalam UI
     setIsOpen(false);
   };
 
@@ -118,12 +139,12 @@ export default function IconPicker({
     };
   }, []);
 
-  // Memuat ikon saat dropdown dibuka
+  // Memuat ikon saat dropdown dibuka atau saat selectedIcon berubah
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen || (selectedIcon && !selectedIconPath)) {
       loadIcons(true);
     }
-  }, [isOpen]);
+  }, [isOpen, selectedIcon]);
 
   return (
     <div className="relative">
@@ -134,7 +155,7 @@ export default function IconPicker({
         className="flex cursor-pointer items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md"
       >
         {selectedIcon && (
-          <Icon path={selectedIcon || ""} size={1} className="mr-2" />
+          <Icon path={getIconPath(selectedIcon) || ""} size={1} className="mr-2" />
         )}
         Pilih Ikon
       </button>
@@ -162,8 +183,9 @@ export default function IconPicker({
               <button
                 key={icon.name}
                 type="button"
-                onClick={() => handleSelect(icon.path)}
+                onClick={() => handleSelect(icon.name, icon.path)}
                 className="flex cursor-pointer items-center justify-center border border-gray-300 dark:border-gray-700 rounded-md p-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                title={icon.name}
               >
                 <Icon
                   path={icon.path}
