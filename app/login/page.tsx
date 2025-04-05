@@ -4,11 +4,19 @@ import { useState } from "react";
 import Image from "next/image";
 import Logo from "@/app/assets/images/logo.webp";
 import Icon from '@mdi/react';
-import { mdiEye, mdiEyeOff, mdiAccount, mdiLock } from '@mdi/js';
+import { mdiEye, mdiEyeOff, mdiEmail, mdiLock } from '@mdi/js';
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
+// URL dasar API dari variabel lingkungan
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost';
+
+/**
+ * Komponen halaman Login
+ * @returns {JSX.Element} Komponen halaman login
+ */
 export default function Login() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -17,20 +25,46 @@ export default function Login() {
   
   const router = useRouter();
 
+  /**
+   * Fungsi untuk menangani pengiriman form login
+   * @param {React.FormEvent} e - Event form
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
     
     try {
-      // Here you would typically call your authentication API
-      // For now, we'll just simulate a login
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Mengirim permintaan login ke API
+      const response = await axios.post(`${BASE_URL}/api/login`, {
+        email,
+        password
+      });
       
-      // Redirect to dashboard after successful login
-      router.push("/dashboard");
-    } catch {
-      setError("Login gagal. Silakan periksa kembali username dan password Anda.");
+      // Memeriksa apakah respons berisi token dan user
+      if (response.data && response.data.token && response.data.user) {
+        // Menyimpan token di localStorage
+        localStorage.setItem('auth_token', response.data.token);
+        
+        // Menyimpan data user di localStorage jika rememberMe dicentang
+        if (rememberMe) {
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+        }
+        
+        // Redirect ke dashboard setelah login berhasil
+        router.push("/dashboard");
+      } else {
+        setError("Format respons login tidak valid.");
+      }
+    } catch (error: any) {
+      console.error("Login error:", error);
+      if (error.response?.data?.message) {
+        setError(error.response.data.message);
+      } else if (error.message) {
+        setError(error.message);
+      } else {
+        setError("Login gagal. Silakan periksa kembali email dan password Anda.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -66,20 +100,20 @@ export default function Login() {
           
           <form onSubmit={handleSubmit}>
             <div className="mb-6 relative">
-              <label htmlFor="username" className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">
-                Username
+              <label htmlFor="email" className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">
+                Email
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <Icon path={mdiAccount} size={1} className="text-gray-500" />
+                  <Icon path={mdiEmail} size={1} className="text-gray-500" />
                 </div>
                 <input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="Masukkan username"
+                  placeholder="Masukkan email"
                   required
                 />
               </div>

@@ -1,26 +1,67 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Icon from "@mdi/react";
 import { mdiUpload } from "@mdi/js";
-import { useRouter } from "next/navigation";
-import { createLayananUnggulan } from "@/app/services/layananUnggulanService";
+import { useParams, useRouter } from "next/navigation";
+import {
+  getLayananUnggulanById,
+  updateLayananUnggulan,
+} from "@/app/services/layananUnggulanService";
+import Image from "next/image";
 
 // Lazy load WYSIWYG editor
-const Editor = dynamic(() => import("@/app/components/WysiwygEditor"), { ssr: false });
+const Editor = dynamic(() => import("@/app/components/WysiwygEditor"), {
+  ssr: false,
+});
 
 /**
- * Komponen utama untuk halaman Tambah Layanan Unggulan
+ * Komponen utama untuk halaman Edit Layanan Unggulan
  * @returns {JSX.Element}
  */
-export default function CreateLayananUnggulan() {
+export default function EditLayananUnggulan() {
+  const params = useParams();
   const [namaLayanan, setNamaLayanan] = useState("");
   const [deskripsi, setDeskripsi] = useState("");
   const [foto, setFoto] = useState<File | null>(null);
+  const [currentFoto, setCurrentFoto] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const id = Number(params.id);
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost';
+
+  /**
+   * Fungsi untuk memuat data layanan dari API
+   */
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getLayananUnggulanById(id);
+
+      if (response.success) {
+        const data = response.data;
+        setNamaLayanan(data.nama_layanan);
+        setDeskripsi(data.deskripsi);
+        setCurrentFoto(data.foto);
+        setFoto(null);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setError("Gagal memuat data layanan");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Memuat data saat komponen dimount
+   */
+  useEffect(() => {
+    fetchData();
+  }, [id]);
 
   /**
    * Fungsi untuk menangani unggahan file
@@ -35,7 +76,7 @@ export default function CreateLayananUnggulan() {
         return;
       }
       // Validasi tipe file
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
       if (!allowedTypes.includes(file.type)) {
         setError("Format file harus JPG, JPEG, atau PNG");
         return;
@@ -69,43 +110,53 @@ export default function CreateLayananUnggulan() {
         formData.append("foto", foto);
       }
 
-      const response = await createLayananUnggulan(formData);
+      const response = await updateLayananUnggulan(id, formData);
 
       if (response.success) {
         // Redirect ke halaman layanan unggulan setelah berhasil
         router.push("/dashboard/layanan-unggulan");
       } else {
-        setError("Gagal menambahkan layanan unggulan");
+        setError("Gagal mengupdate layanan unggulan");
       }
     } catch (error: any) {
-      console.error("Error creating service:", error);
-      setError(error.response?.data?.message || "Terjadi kesalahan saat menambahkan layanan");
+      console.error("Error updating service:", error);
+      setError(
+        error.response?.data?.message ||
+          "Terjadi kesalahan saat mengupdate layanan"
+      );
     } finally {
       setLoading(false);
     }
   };
 
   /**
-   * Fungsi untuk mereset formulir
+   * Fungsi untuk mereset formulir ke data awal
    */
   const handleReset = () => {
-    setNamaLayanan("");
-    setDeskripsi("");
-    setFoto(null);
-    setError("");
+    fetchData();
   };
+
+  if (isLoading) {
+    return (
+      <div className="p-6">
+        <div className="text-center py-8">
+          <p className="text-gray-600 dark:text-gray-400">Memuat data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
       {/* Header halaman */}
       <div className="flex justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Tambah Layanan Unggulan
+          Edit Layanan Unggulan
         </h1>
         <div className="py-2 px-4 opacity-0">-</div>
       </div>
 
-      {/* Form Tambah Layanan */}
+      {/* Form Edit Layanan */}
       <form
         onSubmit={handleSubmit}
         className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 border border-gray-200 dark:border-gray-700"
@@ -117,10 +168,31 @@ export default function CreateLayananUnggulan() {
           </div>
         )}
 
+        {/* Current Photo */}
+        {currentFoto && (
+          <div className="mb-6">
+            <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+              Foto Saat Ini
+            </label>
+            <div className="w-64 h-48 relative mb-2">
+              <Image
+                src={
+                  currentFoto.startsWith("http")
+                    ? currentFoto
+                    : `${BASE_URL}/storage/${currentFoto}`
+                }
+                alt="Foto saat ini"
+                fill
+                className="object-cover rounded-md"
+              />
+            </div>
+          </div>
+        )}
+
         {/* Upload Foto */}
         <div className="mb-6 flex items-center">
           <label className="block text-gray-700 dark:text-gray-300 font-medium w-1/4">
-            Upload Foto
+            Ganti Foto
           </label>
           <div className="flex items-center flex-1">
             <label
@@ -200,7 +272,7 @@ export default function CreateLayananUnggulan() {
                 : "bg-orange-600 hover:bg-orange-700 text-white"
             }`}
           >
-            {loading ? "Saving..." : "Save"}
+            {loading ? "Saving..." : "Update"}
           </button>
         </div>
       </form>

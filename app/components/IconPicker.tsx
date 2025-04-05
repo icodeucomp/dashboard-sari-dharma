@@ -123,7 +123,6 @@ export default function IconPicker({
     if (isOpen) {
       loadIcons(true);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   return (
