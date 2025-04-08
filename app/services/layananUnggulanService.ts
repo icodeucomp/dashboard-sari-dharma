@@ -6,7 +6,8 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost';
 
 // Interface untuk item layanan unggulan
 export interface LayananUnggulanItem {
-  id: number;
+  id: string;
+  slug: string;
   nama_layanan: string;
   deskripsi: string;
   foto: string;
@@ -65,11 +66,11 @@ export const getLayananUnggulan = async (params: PaginationParams = {}) => {
  * @param id - ID layanan unggulan
  * @returns Promise dengan respons API
  */
-export const getLayananUnggulanById = async (id: number) => {
+export const getLayananUnggulanById = async (slug: string, id: string) => {
   const response = await axios.get<{
     success: boolean;
     data: LayananUnggulanItem;
-  }>(`${BASE_URL}/api/layanan-unggulan/${id}`, { headers: authHeader() });
+  }>(`${BASE_URL}/api/layanan-unggulan/${slug}/${id}`, { headers: authHeader() });
   return response.data;
 };
 
@@ -97,7 +98,7 @@ export const createLayananUnggulan = async (formData: FormData) => {
  * @param formData - Data layanan unggulan dalam bentuk FormData
  * @returns Promise dengan respons API
  */
-export const updateLayananUnggulan = async (id: number, formData: FormData) => {
+export const updateLayananUnggulan = async (id: string, formData: FormData) => {
   const response = await axios.post<{
     success: boolean;
     data: LayananUnggulanItem;
@@ -118,7 +119,7 @@ export const updateLayananUnggulan = async (id: number, formData: FormData) => {
  * @param id - ID layanan unggulan
  * @returns Promise dengan respons API
  */
-export const deleteLayananUnggulan = async (id: number) => {
+export const deleteLayananUnggulan = async (id: string) => {
   const response = await axios.delete<{ success: boolean; message: string }>(
     `${BASE_URL}/api/layanan-unggulan/${id}`,
     { headers: authHeader() }

@@ -1,23 +1,62 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import Icon from "@mdi/react";
-import { mdiUpload } from "@mdi/js";
-import { createIndikatorMutu } from "@/app/services/indikatorMutuService";
+import { mdiUpload, mdiFilePdfBox } from "@mdi/js";
+import { getIndikatorMutuById, updateIndikatorMutu } from "@/app/services/indikatorMutuService";
 
 /**
- * Halaman untuk menambahkan Indikator Mutu baru
+ * Halaman untuk mengedit Indikator Mutu
  * @returns {JSX.Element}
  */
-export default function AddIndikatorMutu() {
+export default function EditIndikatorMutu() {
+  const router = useRouter();
+  const { slug, id } = useParams<{ slug: string; id: string }>();
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost";
+
+  // State untuk form
   const [judul, setJudul] = useState("");
   const [filePdf, setFilePdf] = useState<File | null>(null);
-  const [foto, setFoto] = useState<File | null>(null); // Tambah state untuk foto
+  const [foto, setFoto] = useState<File | null>(null);
+  const [currentFile, setCurrentFile] = useState("");
+  const [currentFoto, setCurrentFoto] = useState(""); // Tambah state untuk currentFoto
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+
+  /**
+   * Fungsi untuk memuat data indikator mutu dari API berdasarkan ID
+   */
+  const fetchIndikatorMutu = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getIndikatorMutuById(slug as string, id as string);
+      
+      if (response.success) {
+        const data = response.data;
+        setJudul(data.judul);
+        setCurrentFile(data.file_pdf || "");
+        setCurrentFoto(data.foto || ""); // Set current foto
+      } else {
+        setError("Gagal memuat data indikator mutu");
+      }
+    } catch (error) {
+      console.error("Error fetching indikator mutu:", error);
+      setError("Gagal memuat data indikator mutu");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Memuat data saat komponen dimount
+   */
+  useEffect(() => {
+    fetchIndikatorMutu();
+  }, [id, slug]);
 
   /**
    * Fungsi untuk menangani perubahan file PDF yang diupload
@@ -49,12 +88,7 @@ export default function AddIndikatorMutu() {
       return false;
     }
 
-    if (!filePdf) {
-      setError("File PDF wajib diupload.");
-      return false;
-    }
-
-    // Validasi ukuran file PDF (max 5MB)
+    // Validasi ukuran file PDF jika ada (max 5MB)
     if (filePdf && filePdf.size > 5 * 1024 * 1024) {
       setError("Ukuran file PDF tidak boleh lebih dari 5MB.");
       return false;
@@ -96,19 +130,19 @@ export default function AddIndikatorMutu() {
         formData.append("foto", foto);
       }
 
-      const response = await createIndikatorMutu(formData);
+      const response = await updateIndikatorMutu(id as string, formData);
 
       if (response.success) {
         // Redirect ke halaman indikator mutu setelah berhasil
         router.push("/dashboard/media/indikator-mutu");
       } else {
-        setError("Gagal menambahkan indikator mutu");
+        setError("Gagal mengupdate indikator mutu");
       }
     } catch (error: any) {
-      console.error("Error creating indikator mutu:", error);
+      console.error("Error updating indikator mutu:", error);
       setError(
         error.response?.data?.message || 
-        "Terjadi kesalahan saat menambahkan indikator mutu"
+        "Terjadi kesalahan saat mengupdate indikator mutu"
       );
     } finally {
       setLoading(false);
@@ -116,21 +150,31 @@ export default function AddIndikatorMutu() {
   };
 
   /**
-   * Fungsi untuk mereset formulir
+   * Fungsi untuk mereset form ke data awal
    */
-  const handleReset = () => {
-    setJudul("");
+  const handleResetForm = () => {
+    fetchIndikatorMutu();
     setFilePdf(null);
     setFoto(null);
     setError("");
   };
+
+  if (isLoading) {
+    return (
+      <div className="p-6">
+        <div className="text-center py-8">
+          <p className="text-gray-600 dark:text-gray-400">Memuat data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
       {/* Header halaman */}
       <div className="flex justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Tambah Indikator Mutu Baru
+          Edit Indikator Mutu
         </h1>
         <Link
           href="/dashboard/media/indikator-mutu"
@@ -140,7 +184,7 @@ export default function AddIndikatorMutu() {
         </Link>
       </div>
 
-      {/* Form Tambah Indikator Mutu */}
+      {/* Form Edit Indikator Mutu */}
       <form
         onSubmit={handleSubmit}
         className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 border border-gray-200 dark:border-gray-700"
@@ -149,6 +193,48 @@ export default function AddIndikatorMutu() {
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             {error}
+          </div>
+        )}
+
+        {/* File PDF Saat Ini */}
+        {currentFile && (
+          <div className="mb-6 flex items-center">
+            <label className="w-1/4 text-sm font-medium text-gray-700 dark:text-gray-300">
+              PDF Saat Ini
+            </label>
+            <div className="w-3/4 flex items-center gap-4">
+              <div className="flex items-center p-2 bg-gray-50 dark:bg-gray-700 rounded-md">
+                <Icon path={mdiFilePdfBox} size={1.5} className="text-red-600 dark:text-red-400 mr-2" />
+                <a 
+                  href={`${BASE_URL}/storage/${currentFile}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  Lihat File PDF
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Foto Saat Ini */}
+        {currentFoto && (
+          <div className="mb-6 flex items-center">
+            <label className="w-1/4 text-sm font-medium text-gray-700 dark:text-gray-300">
+              Foto Saat Ini
+            </label>
+            <div className="w-3/4">
+              <div className="relative h-48 w-full max-w-xs">
+                <Image 
+                  src={`${BASE_URL}/storage/${currentFoto}`} 
+                  alt="Foto Indikator Mutu" 
+                  width={300}
+                  height={200}
+                  className="h-48 object-cover border rounded-md"
+                />
+              </div>
+            </div>
           </div>
         )}
 
@@ -171,13 +257,13 @@ export default function AddIndikatorMutu() {
           />
         </div>
 
-        {/* Upload PDF */}
+        {/* Upload PDF Baru */}
         <div className="mb-6 flex items-center">
           <label
             htmlFor="file_pdf"
             className="w-1/4 text-sm font-medium text-gray-700 dark:text-gray-300"
           >
-            Upload PDF <span className="text-red-500">*</span>
+            Upload PDF Baru
           </label>
           <div className="w-3/4 flex items-center gap-4">
             <label
@@ -206,13 +292,13 @@ export default function AddIndikatorMutu() {
           </div>
         </div>
 
-        {/* Upload Foto */}
+        {/* Upload Foto Baru */}
         <div className="mb-6 flex items-center">
           <label
             htmlFor="foto"
             className="w-1/4 text-sm font-medium text-gray-700 dark:text-gray-300"
           >
-            Upload Foto
+            Upload Foto Baru
           </label>
           <div className="w-3/4 flex items-center gap-4">
             <label
@@ -245,7 +331,7 @@ export default function AddIndikatorMutu() {
         <div className="flex justify-end gap-4 mt-8">
           <button
             type="button"
-            onClick={handleReset}
+            onClick={handleResetForm}
             disabled={loading}
             className={`font-medium py-2 px-6 rounded-md ${
               loading 
@@ -264,7 +350,7 @@ export default function AddIndikatorMutu() {
                 : "bg-orange-600 hover:bg-orange-700 text-white"
             }`}
           >
-            {loading ? "Saving..." : "Simpan"}
+            {loading ? "Saving..." : "Update"}
           </button>
         </div>
       </form>

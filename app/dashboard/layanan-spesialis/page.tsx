@@ -81,7 +81,7 @@ export default function LayananSpesialis() {
    * Fungsi untuk menghapus layanan
    * @param {number} id - ID layanan yang akan dihapus
    */
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm("Apakah Anda yakin ingin menghapus layanan ini?")) {
       try {
         setIsDeleting(true);
@@ -187,14 +187,31 @@ export default function LayananSpesialis() {
                 <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
                   {layanan.nama_layanan}
                 </h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                {layanan.deskripsi && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                   {layanan.deskripsi.replace(/<[^>]*>/g, '').substring(0, 100)}
                   {layanan.deskripsi.length > 100 ? '...' : ''}
-                </p>
+                  </p>
+                )}
+                
+                {/* Tampilkan dokter terkait */}
+                {layanan.dokter && layanan.dokter.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Dokter Terkait:
+                    </p>
+                    <ul className="text-xs text-gray-600 dark:text-gray-400 list-disc pl-4">
+                      {layanan.dokter.map((dokter) => (
+                        <li key={dokter.id} className="mb-1">{dokter.nama_dokter}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
                 <div className="flex justify-between">
                   {/* Tombol Edit */}
                   <Link
-                    href={`/dashboard/layanan-spesialis/edit/${layanan.id}`}
+                    href={`/dashboard/layanan-spesialis/edit/${layanan.slug}/${layanan.id}`}
                     className="flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 text-sm font-medium py-2 px-4 rounded-md"
                   >
                     Edit

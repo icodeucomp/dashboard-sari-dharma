@@ -1,44 +1,92 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Icon from "@mdi/react";
 import { mdiPlus, mdiDelete, mdiUpload } from "@mdi/js";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import "moment/locale/id";
 import {
-  createJadwalDokter,
+  getJadwalDokterById,
+  updateJadwalDokter,
   getDokterList,
   getSpesialisList,
   Dokter,
   Spesialis,
+  JadwalItem,
+  EdukasiKarirItem,
 } from "@/app/services/jadwalDokterService";
 
 /**
- * Halaman untuk menambahkan jadwal dokter baru
+ * Halaman untuk mengedit jadwal dokter
  * @returns {JSX.Element}
  */
-export default function AddJadwalDokter() {
+export default function EditJadwalDokter() {
   const router = useRouter();
+  const { id } = useParams<{ id: string }>();
 
   // State untuk form
   const [dokterId, setDokterId] = useState<string>("");
   const [spesialisId, setSpesialisId] = useState<string>("");
   const [backgroundDokter, setBackgroundDokter] = useState("");
   const [foto, setFoto] = useState<File | null>(null);
-  const [jadwal, setJadwal] = useState([
+  const [currentFoto, setCurrentFoto] = useState("");
+  const [jadwal, setJadwal] = useState<JadwalItem[]>([
     { hari: "", jam_mulai: "", jam_selesai: "" },
   ]);
-  const [edukasiKarir, setEdukasiKarir] = useState([
+  const [edukasiKarir, setEdukasiKarir] = useState<EdukasiKarirItem[]>([
     { judul: "", tahun_mulai: "", tahun_selesai: "" },
   ]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // State untuk data dropdown
   const [dokterList, setDokterList] = useState<Dokter[]>([]);
   const [spesialisList, setSpesialisList] = useState<Spesialis[]>([]);
   const [loadingDropdown, setLoadingDropdown] = useState(true);
+
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost";
+
+  /**
+   * Fungsi untuk memuat data jadwal dokter berdasarkan ID
+   */
+  const fetchJadwalDokter = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getJadwalDokterById(id);
+
+      if (response.success) {
+        const data = response.data;
+        setDokterId(data.dokter_id);
+        setSpesialisId(data.spesialis_id);
+        setBackgroundDokter(data.background_dokter || "");
+        setCurrentFoto(data.foto || "");
+
+        // Jadikan array kosong jika tidak ada jadwal
+        if (data.jadwal_dokter && data.jadwal_dokter.length > 0) {
+          setJadwal(data.jadwal_dokter);
+        } else {
+          setJadwal([{ hari: "", jam_mulai: "", jam_selesai: "" }]);
+        }
+
+        // Jadikan array kosong jika tidak ada edukasi/karir
+        if (data.edukasi_karir && data.edukasi_karir.length > 0) {
+          setEdukasiKarir(data.edukasi_karir);
+        } else {
+          setEdukasiKarir([{ judul: "", tahun_mulai: "", tahun_selesai: "" }]);
+        }
+      } else {
+        setError("Gagal memuat data jadwal dokter");
+      }
+    } catch (error) {
+      console.error("Error fetching jadwal dokter:", error);
+      setError("Gagal memuat data jadwal dokter");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   /**
    * Fungsi untuk memuat data dokter dan spesialis untuk dropdown
@@ -86,11 +134,12 @@ export default function AddJadwalDokter() {
   };
 
   /**
-   * Memuat data dropdown saat komponen dimount
+   * Memuat data saat komponen dimount
    */
   useEffect(() => {
     fetchDropdownData();
-  }, []);
+    fetchJadwalDokter();
+  }, [id]);
 
   /**
    * Fungsi untuk menambahkan jadwal baru
@@ -176,15 +225,11 @@ export default function AddJadwalDokter() {
   };
 
   /**
-   * Fungsi untuk mereset form ke nilai awal
+   * Fungsi untuk mereset form ke data awal
    */
   const handleResetForm = () => {
-    setDokterId("");
-    setSpesialisId("");
-    setBackgroundDokter("");
+    fetchJadwalDokter();
     setFoto(null);
-    setJadwal([{ hari: "", jam_mulai: "", jam_selesai: "" }]);
-    setEdukasiKarir([{ judul: "", tahun_mulai: "", tahun_selesai: "" }]);
     setError("");
   };
 
@@ -240,8 +285,8 @@ export default function AddJadwalDokter() {
 
       // Mempersiapkan FormData untuk unggah file
       const formData = new FormData();
-      formData.append("dokter_id", dokterId.toString());
-      formData.append("spesialis_id", spesialisId.toString());
+      formData.append("dokter_id", dokterId);
+      formData.append("spesialis_id", spesialisId);
 
       if (backgroundDokter) {
         formData.append("background_dokter", backgroundDokter);
@@ -255,30 +300,40 @@ export default function AddJadwalDokter() {
       formData.append("jadwal_dokter", JSON.stringify(jadwal));
       formData.append("edukasi_karir", JSON.stringify(edukasiKarir));
 
-      const response = await createJadwalDokter(formData);
+      const response = await updateJadwalDokter(id, formData);
 
       if (response.success) {
         router.push("/dashboard/jadwal-dokter");
       } else {
-        setError("Gagal menambahkan jadwal dokter");
+        setError("Gagal mengupdate jadwal dokter");
       }
     } catch (error: any) {
-      console.error("Error creating jadwal dokter:", error);
+      console.error("Error updating jadwal dokter:", error);
       setError(
         error.response?.data?.message ||
-          "Terjadi kesalahan saat menambahkan jadwal dokter"
+          "Terjadi kesalahan saat mengupdate jadwal dokter"
       );
     } finally {
       setLoading(false);
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="p-6">
+        <div className="text-center py-8">
+          <p className="text-gray-600 dark:text-gray-400">Memuat data...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6">
       {/* Header halaman */}
       <div className="flex justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Tambah Jadwal Dokter Baru
+          Edit Jadwal Dokter
         </h1>
         <Link
           href="/dashboard/jadwal-dokter"
@@ -288,7 +343,7 @@ export default function AddJadwalDokter() {
         </Link>
       </div>
 
-      {/* Form tambah jadwal dokter */}
+      {/* Form edit jadwal dokter */}
       <form
         onSubmit={handleSubmit}
         className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 border border-gray-200 dark:border-gray-700"
@@ -300,32 +355,57 @@ export default function AddJadwalDokter() {
           </div>
         )}
 
-        {/* Upload Foto */}
-        <div className="mb-6 flex items-center">
-          <label className="block text-gray-700 dark:text-gray-300 font-medium w-1/4">
-            Upload Foto
-          </label>
-          <div className="flex items-center flex-1">
-            <label
-              htmlFor="foto"
-              className={`flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md cursor-pointer ${
-                loading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            >
-              <Icon path={mdiUpload} size={1} className="mr-2" />
-              Browse
+        {/* Foto Saat Ini dan Upload Foto Baru */}
+        <div className="mb-6">
+          <div className="flex items-center mb-4">
+            <label className="block text-gray-700 dark:text-gray-300 font-medium w-1/4">
+              Foto Saat Ini
             </label>
-            <input
-              id="foto"
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden"
-              disabled={loading}
-            />
-            <span className="ml-4 text-sm text-gray-500 dark:text-gray-400">
-              {foto ? foto.name : "max. 2mb"}
-            </span>
+            <div className="flex-1">
+              {currentFoto ? (
+                <div className="relative h-48 w-full max-w-xs">
+                  <Image
+                    src={`${BASE_URL}/storage/${currentFoto}`}
+                    alt="Foto Dokter"
+                    width={200}
+                    height={200}
+                    className="h-48 object-cover border"
+                  />
+                </div>
+              ) : (
+                <p className="text-gray-500 dark:text-gray-400">
+                  Tidak ada foto
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center">
+            <label className="block text-gray-700 dark:text-gray-300 font-medium w-1/4">
+              Upload Foto Baru
+            </label>
+            <div className="flex items-center flex-1">
+              <label
+                htmlFor="foto"
+                className={`flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md cursor-pointer ${
+                  loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+              >
+                <Icon path={mdiUpload} size={1} className="mr-2" />
+                Browse
+              </label>
+              <input
+                id="foto"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+                disabled={loading}
+              />
+              <span className="ml-4 text-sm text-gray-500 dark:text-gray-400">
+                {foto ? foto.name : "max. 2mb"}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -498,7 +578,9 @@ export default function AddJadwalDokter() {
           {edukasiKarir.map((item, index) => (
             <div key={index} className="flex items-center gap-4 mb-4">
               <div className="flex flex-col w-1/2">
-                <label className="text-xs text-gray-500 mb-1">Pendidikan</label>
+                <label className="text-xs text-gray-500 mb-1">
+                  Pendidikan
+                </label>
                 <input
                   type="text"
                   value={item.judul}
@@ -599,7 +681,7 @@ export default function AddJadwalDokter() {
                 : "bg-orange-600 hover:bg-orange-700 text-white"
             }`}
           >
-            {loading ? "Saving..." : "Simpan"}
+            {loading ? "Saving..." : "Update"}
           </button>
         </div>
       </form>

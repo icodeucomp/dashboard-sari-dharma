@@ -17,6 +17,25 @@ const formatSegmentText = (text: string): string => {
     .join(' ');
 };
 
+/**
+ * Fungsi untuk memeriksa apakah sebuah segment adalah slug (memiliki pola yang tidak standar)
+ * @param {string} segment - Segment path yang akan diperiksa
+ * @returns {boolean} - Hasil pemeriksaan apakah segment merupakan slug
+ */
+const isSlug = (segment: string): boolean => {
+  // Slug biasanya memiliki banyak karakter huruf kecil dan angka dengan tanda hubung
+  // dan tidak terdaftar dalam pathNames
+  const commonSegments = [
+    'dashboard', 'pasien', 'tambah', 'jadwal', 'antrian', 'dokter', 'layanan',
+    'rekam-medis', 'pemeriksaan', 'resep', 'keuangan', 'pembayaran', 'laporan',
+    'pengaturan', 'profile', 'layanan-unggulan', 'layanan-spesialis', 
+    'layanan-fasilitas', 'jadwal-dokter', 'reviews', 'media', 'create', 'edit',
+    'artikel-kesehatan', 'paket-kesehatan', 'event-community'
+  ];
+  
+  return !commonSegments.includes(segment) && /^[a-z0-9-]+$/.test(segment);
+};
+
 export default function Breadcrumbs() {
   const pathname = usePathname();
   
@@ -58,7 +77,13 @@ export default function Breadcrumbs() {
     media: 'Media & Informasi',
     create: 'Tambah Baru',
     edit: 'Edit',
+    'artikel-kesehatan': 'Artikel Kesehatan',
+    'paket-kesehatan': 'Paket Kesehatan',
+    'event-community': 'Event & Community'
   };
+
+  // Segment yang akan ditampilkan sebagai teks biasa (bukan link)
+  const disabledLinkSegments = ['media', 'create', 'edit'];
 
   return (
     <nav className="flex items-center text-sm">
@@ -77,11 +102,14 @@ export default function Breadcrumbs() {
           // Gunakan nama yang sudah dipetakan atau format teks dari URL
           const segmentText = pathNames[segment] || formatSegmentText(segment);
           
+          // Cek apakah segment ini adalah slug atau segment yang dijadikan teks biasa
+          const isDisabledLink = isLast || disabledLinkSegments.includes(segment) || isSlug(segment);
+          
           return (
             <li key={path} className="flex items-center pt-1">
               <Icon path={mdiChevronRight} size={0.8} className="mx-2 text-gray-500 dark:text-gray-400" />
               
-              {isLast ? (
+              {isDisabledLink ? (
                 <span className="text-gray-700 dark:text-gray-300 flex items-center">
                   {segmentText}
                 </span>

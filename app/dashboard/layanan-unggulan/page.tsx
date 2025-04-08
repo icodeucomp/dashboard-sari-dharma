@@ -61,9 +61,9 @@ export default function LayananUnggulan() {
 
   /**
    * Fungsi untuk menghapus layanan
-   * @param {number} id - ID layanan yang akan dihapus
+   * @param {string} id - ID layanan yang akan dihapus
    */
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm("Apakah Anda yakin ingin menghapus layanan ini?")) {
       try {
         setIsDeleting(true);
@@ -172,7 +172,7 @@ export default function LayananUnggulan() {
                 <div className="mt-auto flex justify-between">
                   {/* Tombol Edit */}
                   <Link
-                    href={`/dashboard/layanan-unggulan/edit/${layanan.id}`}
+                    href={`/dashboard/layanan-unggulan/edit/${layanan.slug}/${layanan.id}`}
                     className="flex items-center bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium py-2 px-4 rounded-md"
                   >
                     Edit

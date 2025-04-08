@@ -4,6 +4,7 @@ import { useState } from "react";
 import Icon from "@mdi/react";
 import { mdiUpload } from "@mdi/js";
 import { useRouter } from "next/navigation";
+import { createLayananFasilitas } from "@/app/services/layananFasilitasService";
 
 /**
  * Komponen utama untuk halaman Tambah Layanan & Fasilitas
@@ -15,8 +16,8 @@ export default function CreateLayananFasilitas() {
   const [layananFasilitas, setLayananFasilitas] = useState("");
   const [fotoHeader, setFotoHeader] = useState<File | null>(null);
   const [fotoLainnya, setFotoLainnya] = useState<File | null>(null);
-  const [judulFotoLainnya, setJudulFotoLainnya] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   /**
@@ -38,26 +39,46 @@ export default function CreateLayananFasilitas() {
    * Fungsi untuk menangani pengiriman formulir
    * @param {React.FormEvent} e - Event formulir
    */
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!namaFasilitas || !deskripsi || !layananFasilitas || !fotoHeader) {
-      setError("Semua field wajib diisi.");
+    if (!namaFasilitas) {
+      setError("Nama fasilitas wajib diisi.");
       return;
     }
 
-    // Simulasi pengiriman data
-    console.log({
-      namaFasilitas,
-      deskripsi,
-      layananFasilitas,
-      fotoHeader,
-      fotoLainnya,
-      judulFotoLainnya,
-    });
+    try {
+      setLoading(true);
+      setError("");
 
-    // Redirect ke halaman layanan fasilitas setelah berhasil
-    router.push("/dashboard/layanan-fasilitas");
+      // Mempersiapkan FormData untuk unggah file
+      const formData = new FormData();
+      formData.append("nama_fasilitas", namaFasilitas);
+      formData.append("deskripsi_overview", deskripsi);
+      formData.append("layanan_fasilitas", layananFasilitas);
+      
+      if (fotoHeader) {
+        formData.append("foto_header", fotoHeader);
+      }
+      
+      if (fotoLainnya) {
+        formData.append("foto_lainnya", fotoLainnya);
+      }
+
+      const response = await createLayananFasilitas(formData);
+
+      if (response.success) {
+        // Redirect ke halaman layanan fasilitas setelah berhasil
+        router.push("/dashboard/layanan-fasilitas");
+      } else {
+        setError("Gagal menambahkan layanan & fasilitas");
+      }
+    } catch (error: any) {
+      console.error("Error creating facility:", error);
+      setError(error.response?.data?.message || "Terjadi kesalahan saat menambahkan layanan & fasilitas");
+    } finally {
+      setLoading(false);
+    }
   };
 
   /**
@@ -69,7 +90,6 @@ export default function CreateLayananFasilitas() {
     setLayananFasilitas("");
     setFotoHeader(null);
     setFotoLainnya(null);
-    setJudulFotoLainnya("");
     setError("");
   };
 
@@ -102,7 +122,9 @@ export default function CreateLayananFasilitas() {
           <div className="flex items-center flex-1">
             <label
               htmlFor="fotoHeader"
-              className="flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md cursor-pointer"
+              className={`flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md cursor-pointer ${
+                loading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
               <Icon path={mdiUpload} size={1} className="mr-2" />
               Browse
@@ -113,9 +135,10 @@ export default function CreateLayananFasilitas() {
               accept="image/*"
               onChange={(e) => handleFileChange(e, "header")}
               className="hidden"
+              disabled={loading}
             />
             <span className="ml-4 text-sm text-gray-500 dark:text-gray-400">
-              {fotoHeader ? fotoHeader.name : "max. 5mb"}
+              {fotoHeader ? fotoHeader.name : "max. 2mb"}
             </span>
           </div>
         </div>
@@ -136,42 +159,36 @@ export default function CreateLayananFasilitas() {
             className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             placeholder="Masukkan nama fasilitas"
             required
+            disabled={loading}
           />
         </div>
 
-        {/* Upload Foto Lainnya dan Judul */}
+        {/* Upload Foto Lainnya */}
         <div className="mb-6 flex items-center">
           <label className="block text-gray-700 dark:text-gray-300 font-medium w-1/4">
             Upload Foto Lainnya
           </label>
-          <div className="flex items-center flex-1 gap-4">
-            <div className="flex items-center">
-              <label
-                htmlFor="fotoLainnya"
-                className="flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md cursor-pointer"
-              >
-                <Icon path={mdiUpload} size={1} className="mr-2" />
-                Browse
-              </label>
-              <input
-                id="fotoLainnya"
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleFileChange(e, "lainnya")}
-                className="hidden"
-              />
-              <span className="ml-4 text-sm text-gray-500 dark:text-gray-400">
-                {fotoLainnya ? fotoLainnya.name : "max. 5mb"}
-              </span>
-            </div>
+          <div className="flex items-center flex-1">
+            <label
+              htmlFor="fotoLainnya"
+              className={`flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md cursor-pointer ${
+                loading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              <Icon path={mdiUpload} size={1} className="mr-2" />
+              Browse
+            </label>
             <input
-              id="judulFotoLainnya"
-              type="text"
-              value={judulFotoLainnya}
-              onChange={(e) => setJudulFotoLainnya(e.target.value)}
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              placeholder="Judul Foto Lainnya"
+              id="fotoLainnya"
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleFileChange(e, "lainnya")}
+              className="hidden"
+              disabled={loading}
             />
+            <span className="ml-4 text-sm text-gray-500 dark:text-gray-400">
+              {fotoLainnya ? fotoLainnya.name : "max. 2mb"}
+            </span>
           </div>
         </div>
 
@@ -190,6 +207,7 @@ export default function CreateLayananFasilitas() {
             className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             rows={5}
             placeholder="Masukkan deskripsi overview"
+            disabled={loading}
           ></textarea>
         </div>
 
@@ -208,6 +226,7 @@ export default function CreateLayananFasilitas() {
             className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             rows={8}
             placeholder="Masukkan layanan fasilitas"
+            disabled={loading}
           ></textarea>
         </div>
 
@@ -216,15 +235,25 @@ export default function CreateLayananFasilitas() {
           <button
             type="button"
             onClick={handleReset}
-            className="border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-6 rounded-md"
+            disabled={loading}
+            className={`font-medium py-2 px-6 rounded-md ${
+              loading
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700"
+            }`}
           >
             Reset
           </button>
           <button
             type="submit"
-            className="bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-6 rounded-md"
+            disabled={loading}
+            className={`font-medium py-2 px-6 rounded-md ${
+              loading
+                ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                : "bg-orange-600 hover:bg-orange-700 text-white"
+            }`}
           >
-            Save
+            {loading ? "Saving..." : "Save"}
           </button>
         </div>
       </form>

@@ -21,7 +21,6 @@ const Editor = dynamic(() => import("@/app/components/WysiwygEditor"), {
  * @returns {JSX.Element}
  */
 export default function EditLayananUnggulan() {
-  const params = useParams();
   const [namaLayanan, setNamaLayanan] = useState("");
   const [deskripsi, setDeskripsi] = useState("");
   const [foto, setFoto] = useState<File | null>(null);
@@ -30,7 +29,7 @@ export default function EditLayananUnggulan() {
   const [loading, setLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const id = Number(params.id);
+  const { slug, id } = useParams<{ slug: string; id: string }>();
   const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost';
 
   /**
@@ -39,7 +38,7 @@ export default function EditLayananUnggulan() {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const response = await getLayananUnggulanById(id);
+      const response = await getLayananUnggulanById(slug, id);
 
       if (response.success) {
         const data = response.data;

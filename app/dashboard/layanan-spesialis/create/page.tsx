@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import IconPicker from "@/app/components/IconPicker";
 import { mdiDelete, mdiPlus, mdiRestore } from "@mdi/js";
 import Icon from "@mdi/react";
 import { useRouter } from "next/navigation";
 import { createLayananSpesialis } from "@/app/services/layananSpesialisService";
+import { getMasterDokter, DokterItem } from "@/app/services/masterDokterService";
 
 /**
  * Komponen utama untuk halaman Tambah Layanan Spesialis
@@ -14,17 +15,39 @@ import { createLayananSpesialis } from "@/app/services/layananSpesialisService";
 export default function CreateLayananSpesialis() {
   const [namaLayanan, setNamaLayanan] = useState("");
   const [deskripsi, setDeskripsi] = useState("");
-  const [dokterTerkait, setDokterTerkait] = useState([""]);
+  const [dokterTerkait, setDokterTerkait] = useState<string[]>([""]); // Menggunakan string ID (terenkripsi)
   const [selectedIcon, setSelectedIcon] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [dokterList, setDokterList] = useState<DokterItem[]>([]);
+  const [loadingDokter, setLoadingDokter] = useState(true);
   const router = useRouter();
 
-  const dokterOptions = [
-    "dr. Bambang Sutoyo, Sp.A",
-    "dr. Siti Aminah, Sp.B",
-    "dr. Rudi Hartono, Sp.C",
-  ];
+  /**
+   * Fungsi untuk memuat data dokter dari API
+   */
+  const fetchDokter = async () => {
+    try {
+      setLoadingDokter(true);
+      const response = await getMasterDokter({ per_page: 100 }); // Ambil maksimal 100 dokter
+      if (response.success) {
+        setDokterList(response.data.data);
+      } else {
+        console.error("Gagal memuat data dokter");
+      }
+    } catch (error) {
+      console.error("Error fetching dokter data:", error);
+    } finally {
+      setLoadingDokter(false);
+    }
+  };
+
+  /**
+   * Memuat data dokter saat komponen dimount
+   */
+  useEffect(() => {
+    fetchDokter();
+  }, []);
 
   /**
    * Fungsi untuk menambah input dokter terkait
@@ -52,11 +75,11 @@ export default function CreateLayananSpesialis() {
   /**
    * Fungsi untuk mengubah nilai dokter terkait
    * @param {number} index - Index dokter terkait
-   * @param {string} value - Nilai baru
+   * @param {string} dokterId - ID dokter yang dipilih (terenkripsi)
    */
-  const handleDokterChange = (index: number, value: string) => {
+  const handleDokterChange = (index: number, dokterId: string) => {
     const updatedDokter = [...dokterTerkait];
-    updatedDokter[index] = value;
+    updatedDokter[index] = dokterId;
     setDokterTerkait(updatedDokter);
   };
 
@@ -67,8 +90,16 @@ export default function CreateLayananSpesialis() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!namaLayanan || !deskripsi || !selectedIcon || dokterTerkait.some((dokter) => !dokter)) {
-      setError("Semua field wajib diisi.");
+    // Validasi input
+    if (!namaLayanan || !selectedIcon) {
+      setError("Nama layanan dan ikon wajib diisi.");
+      return;
+    }
+
+    // Validasi dokter_ids (semua harus dipilih dan tidak boleh kosong)
+    const validDokterIds = dokterTerkait.filter(id => id !== "");
+    if (dokterTerkait.length > 0 && validDokterIds.length !== dokterTerkait.length) {
+      setError("Semua dokter terkait harus dipilih.");
       return;
     }
 
@@ -76,12 +107,12 @@ export default function CreateLayananSpesialis() {
       setLoading(true);
       setError("");
 
-      // Kirim data ke API
+      // Kirim data ke API dengan dokter_ids
       const payload = {
         nama_layanan: namaLayanan,
         deskripsi: deskripsi,
         icon: selectedIcon,
-        dokter: dokterTerkait.filter(d => d.trim() !== ""), // Hapus dokter kosong
+        dokter_ids: validDokterIds, // Kirim array string ID yang terenkripsi
       };
 
       const response = await createLayananSpesialis(payload);
@@ -158,6 +189,7 @@ export default function CreateLayananSpesialis() {
             className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             placeholder="Masukkan nama layanan"
             required
+            disabled={loading}
           />
         </div>
 
@@ -176,11 +208,12 @@ export default function CreateLayananSpesialis() {
             className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             rows={5}
             placeholder="Masukkan deskripsi layanan"
+            disabled={loading}
           ></textarea>
         </div>
 
         {/* Dokter Terkait */}
-        {dokterTerkait.map((dokter, index) => (
+        {dokterTerkait.map((dokterId, index) => (
           <div key={index} className="mb-6 flex items-center">
             <label
               className="block text-gray-700 dark:text-gray-300 font-medium w-1/4"
@@ -188,26 +221,36 @@ export default function CreateLayananSpesialis() {
               Dokter Spesialis Terkait {index + 1} <span className="text-red-500">*</span>
             </label>
             <div className="flex-1 flex items-center gap-4">
-              <select
-                value={dokter}
-                onChange={(e) => handleDokterChange(index, e.target.value)}
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                required
-              >
-                <option value="" disabled>
-                  Pilih Dokter
-                </option>
-                {dokterOptions.map((option, i) => (
-                  <option key={i} value={option}>
-                    {option}
+              {loadingDokter ? (
+                <div className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md dark:bg-gray-700">
+                  Memuat data dokter...
+                </div>
+              ) : (
+                <select
+                  value={dokterId}
+                  onChange={(e) => handleDokterChange(index, e.target.value)}
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  required
+                  disabled={loading}
+                >
+                  <option value="" disabled>
+                    Pilih Dokter
                   </option>
-                ))}
-              </select>
+                  {dokterList.map((dokter) => (
+                    <option key={dokter.id} value={dokter.id}>
+                      {dokter.nama_dokter}
+                    </option>
+                  ))}
+                </select>
+              )}
               {index > 0 && (
                 <button
                   type="button"
                   onClick={() => handleDeleteDokter(index)}
-                  className="flex items-center border border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700 font-medium py-2 px-4 rounded-md"
+                  className={`flex items-center border border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700 font-medium py-2 px-4 rounded-md ${
+                    loading ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  disabled={loading}
                 >
                   <Icon path={mdiDelete} size={0.8} className="mr-2" />
                   Delete
@@ -220,7 +263,10 @@ export default function CreateLayananSpesialis() {
           <button
             type="button"
             onClick={handleResetDokter}
-            className="flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md"
+            className={`flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md ${
+              loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            disabled={loading}
           >
             <Icon path={mdiRestore} size={0.8} className="mr-2" />
             Reset
@@ -228,7 +274,10 @@ export default function CreateLayananSpesialis() {
           <button
             type="button"
             onClick={handleAddDokter}
-            className="flex items-center bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-md"
+            className={`flex items-center bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-md ${
+              loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            disabled={loading}
           >
             <Icon path={mdiPlus} size={0.8} className="mr-2" />
             Add More

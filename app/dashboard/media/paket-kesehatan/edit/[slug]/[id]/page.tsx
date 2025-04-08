@@ -1,34 +1,48 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Icon from "@mdi/react";
 import { mdiUpload } from "@mdi/js";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { createPaketKesehatan } from "@/app/services/paketKesehatanService";
+import { useParams, useRouter } from "next/navigation";
+import { 
+  getPaketKesehatanById, 
+  updatePaketKesehatan, 
+  PaketKesehatanItem
+} from "@/app/services/paketKesehatanService";
 import { getKategoriList, createKategori, Kategori } from "@/app/services/masterKategoriService";
 import { KategoriSelect, OptionType } from "@/app/components/CreatableSelect";
 
 /**
- * Halaman untuk menambahkan Paket Kesehatan baru
+ * Halaman untuk mengedit Paket Kesehatan
  * @returns {JSX.Element}
  */
-export default function AddPaketKesehatan() {
+export default function EditPaketKesehatan() {
   const router = useRouter();
+  const { slug, id } = useParams<{ slug: string; id: string }>();
 
   // State untuk form
   const [kategoriId, setKategoriId] = useState("");
-  const [promo, setPromo] = useState(false);
+  const [promo, setPromo] = useState(0);
   const [berlakuSampai, setBerlakuSampai] = useState("");
   const [namaPaket, setNamaPaket] = useState("");
   const [deskripsi, setDeskripsi] = useState("");
   const [foto, setFoto] = useState<File | null>(null);
+  const [currentFoto, setCurrentFoto] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // State untuk data dropdown
-  const [kategoriOptions, setKategoriOptions] = useState<OptionType[]>([]);
+  const [kategoriList, setKategoriList] = useState<Kategori[]>([]);
   const [loadingDropdown, setLoadingDropdown] = useState(true);
+
+  // Update kategori state
+  const [kategoriOptions, setKategoriOptions] = useState<OptionType[]>([]);
+
+  // URL dasar API dari variabel lingkungan
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost";
 
   /**
    * Fungsi untuk mengubah data kategori menjadi format opsi dropdown
@@ -70,13 +84,6 @@ export default function AddPaketKesehatan() {
   };
 
   /**
-   * Memuat data kategori saat komponen dimount
-   */
-  useEffect(() => {
-    fetchKategoriList();
-  }, []);
-
-  /**
    * Fungsi untuk membuat kategori baru
    * @param name - Nama kategori
    * @returns Hasil pembuatan kategori
@@ -110,6 +117,41 @@ export default function AddPaketKesehatan() {
   };
 
   /**
+   * Fungsi untuk memuat data paket kesehatan dari API berdasarkan ID
+   */
+  const fetchPaketKesehatan = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getPaketKesehatanById(slug as string, id as string);
+      
+      if (response.success) {
+        const data = response.data;
+        setNamaPaket(data.nama_paket);
+        setKategoriId(data.kategori_id);
+        setPromo(data.promo);
+        setBerlakuSampai(data.berlaku_sampai ? data.berlaku_sampai.split('T')[0] : "");
+        setDeskripsi(data.deskripsi || "");
+        setCurrentFoto(data.foto || "");
+      } else {
+        setError("Gagal memuat data paket kesehatan");
+      }
+    } catch (error) {
+      console.error("Error fetching paket kesehatan:", error);
+      setError("Gagal memuat data paket kesehatan");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Memuat data saat komponen dimount
+   */
+  useEffect(() => {
+    fetchKategoriList();
+    fetchPaketKesehatan();
+  }, [id, slug]);
+
+  /**
    * Fungsi untuk menangani unggahan file
    * @param {React.ChangeEvent<HTMLInputElement>} e - Event input file
    */
@@ -120,14 +162,10 @@ export default function AddPaketKesehatan() {
   };
 
   /**
-   * Fungsi untuk mereset form ke nilai awal
+   * Fungsi untuk mereset form ke data awal
    */
   const handleResetForm = () => {
-    setKategoriId("");
-    setPromo(false);
-    setBerlakuSampai("");
-    setNamaPaket("");
-    setDeskripsi("");
+    fetchPaketKesehatan();
     setFoto(null);
     setError("");
   };
@@ -157,7 +195,7 @@ export default function AddPaketKesehatan() {
   };
 
   /**
-   * Fungsi untuk menangani pengiriman form
+   * Fungsi untuk menangani submit form
    * @param {React.FormEvent} e - Event form
    */
   const handleSubmit = async (e: React.FormEvent) => {
@@ -189,31 +227,40 @@ export default function AddPaketKesehatan() {
         formData.append("foto", foto);
       }
 
-      const response = await createPaketKesehatan(formData);
+      const response = await updatePaketKesehatan(id as string, formData);
 
       if (response.success) {
-        // Redirect ke halaman paket kesehatan setelah berhasil
         router.push("/dashboard/media/paket-kesehatan");
       } else {
-        setError("Gagal menambahkan paket kesehatan");
+        setError("Gagal mengupdate paket kesehatan");
       }
     } catch (error: any) {
-      console.error("Error creating paket kesehatan:", error);
+      console.error("Error updating paket kesehatan:", error);
       setError(
         error.response?.data?.message || 
-        "Terjadi kesalahan saat menambahkan paket kesehatan"
+        "Terjadi kesalahan saat mengupdate paket kesehatan"
       );
     } finally {
       setLoading(false);
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="p-6">
+        <div className="text-center py-8">
+          <p className="text-gray-600 dark:text-gray-400">Memuat data...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6">
       {/* Header halaman */}
       <div className="flex justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Tambah Paket Kesehatan
+          Edit Paket Kesehatan
         </h1>
         <Link
           href="/dashboard/media/paket-kesehatan"
@@ -223,7 +270,7 @@ export default function AddPaketKesehatan() {
         </Link>
       </div>
 
-      {/* Form Tambah Paket Kesehatan */}
+      {/* Form Edit Paket Kesehatan */}
       <form
         onSubmit={handleSubmit}
         className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 border border-gray-200 dark:border-gray-700"
@@ -235,32 +282,55 @@ export default function AddPaketKesehatan() {
           </div>
         )}
 
-        {/* Upload Foto */}
-        <div className="mb-6 flex items-center">
-          <label className="block text-gray-700 dark:text-gray-300 font-medium w-1/4">
-            Upload Foto
-          </label>
-          <div className="flex items-center flex-1">
-            <label
-              htmlFor="foto"
-              className={`flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md cursor-pointer ${
-                loading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            >
-              <Icon path={mdiUpload} size={1} className="mr-2" />
-              Browse
+        {/* Foto Saat Ini dan Upload Foto Baru */}
+        <div className="mb-6">
+          <div className="flex items-center mb-4">
+            <label className="block text-gray-700 dark:text-gray-300 font-medium w-1/4">
+              Foto Saat Ini
             </label>
-            <input
-              id="foto"
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden"
-              disabled={loading}
-            />
-            <span className="ml-4 text-sm text-gray-500 dark:text-gray-400">
-              {foto ? foto.name : "max. 5mb"}
-            </span>
+            <div className="flex-1">
+              {currentFoto ? (
+                <div className="relative h-48 w-full max-w-xs">
+                  <Image 
+                    src={`${BASE_URL}/storage/${currentFoto}`} 
+                    alt="Foto Paket Kesehatan" 
+                    width={300}
+                    height={200}
+                    className="h-48 object-cover border"
+                  />
+                </div>
+              ) : (
+                <p className="text-gray-500 dark:text-gray-400">Tidak ada foto</p>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex items-center">
+            <label className="block text-gray-700 dark:text-gray-300 font-medium w-1/4">
+              Upload Foto Baru
+            </label>
+            <div className="flex items-center flex-1">
+              <label
+                htmlFor="foto"
+                className={`flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md cursor-pointer ${
+                  loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+              >
+                <Icon path={mdiUpload} size={1} className="mr-2" />
+                Browse
+              </label>
+              <input
+                id="foto"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+                disabled={loading}
+              />
+              <span className="ml-4 text-sm text-gray-500 dark:text-gray-400">
+                {foto ? foto.name : "max. 5mb"}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -297,8 +367,8 @@ export default function AddPaketKesehatan() {
                 type="radio"
                 name="promo"
                 value="yes"
-                checked={promo === true}
-                onChange={() => setPromo(true)}
+                checked={promo === 1}
+                onChange={() => setPromo(1)}
                 className="mr-2"
                 disabled={loading}
               />
@@ -309,8 +379,8 @@ export default function AddPaketKesehatan() {
                 type="radio"
                 name="promo"
                 value="no"
-                checked={promo === false}
-                onChange={() => setPromo(false)}
+                checked={promo === 0}
+                onChange={() => setPromo(0)}
                 className="mr-2"
                 disabled={loading}
               />
@@ -399,7 +469,7 @@ export default function AddPaketKesehatan() {
                 : "bg-orange-600 hover:bg-orange-700 text-white"
             }`}
           >
-            {loading ? "Saving..." : "Simpan"}
+            {loading ? "Saving..." : "Update"}
           </button>
         </div>
       </form>

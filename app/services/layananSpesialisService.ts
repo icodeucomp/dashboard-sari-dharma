@@ -8,11 +8,21 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost";
  * Interface untuk item layanan spesialis
  */
 export interface LayananSpesialisItem {
-  id: number;
+  id: string;
+  slug: string;
   nama_layanan: string;
   deskripsi: string;
   icon: string;
-  dokter: string[];
+  dokter: {
+    id: string; // ID berupa string terenkripsi
+    nama_dokter: string;
+    background_dokter: string;
+    foto: string;
+    pivot: {
+      spesialis_id: string;
+      dokter_id: string;
+    }
+  }[];
   created_at: string;
   updated_at: string;
 }
@@ -67,14 +77,15 @@ export const getLayananSpesialis = async (params: PaginationParams = {}) => {
 
 /**
  * Fungsi untuk mendapatkan detail layanan spesialis berdasarkan ID
+ * @param slug - Slug layanan spesialis
  * @param id - ID layanan spesialis
  * @returns Promise dengan respons API
  */
-export const getLayananSpesialisById = async (id: number) => {
+export const getLayananSpesialisById = async (slug: string, id: string) => {
   const response = await axios.get<{
     success: boolean;
     data: LayananSpesialisItem;
-  }>(`${BASE_URL}/api/layanan-spesialis/${id}`, { headers: authHeader() });
+  }>(`${BASE_URL}/api/layanan-spesialis/${slug}/${id}`, { headers: authHeader() });
   return response.data;
 };
 
@@ -87,7 +98,7 @@ export const createLayananSpesialis = async (data: {
   nama_layanan: string;
   deskripsi: string;
   icon: string;
-  dokter: string[];
+  dokter_ids: string[]; // Array string ID yang terenkripsi
 }) => {
   const response = await axios.post<{
     success: boolean;
@@ -105,12 +116,12 @@ export const createLayananSpesialis = async (data: {
  * @returns Promise dengan respons API
  */
 export const updateLayananSpesialis = async (
-  id: number,
+  id: string,
   data: {
     nama_layanan: string;
     deskripsi: string;
     icon: string;
-    dokter: string[];
+    dokter_ids: string[]; // Array string ID yang terenkripsi
   }
 ) => {
   const response = await axios.post<{
@@ -132,7 +143,7 @@ export const updateLayananSpesialis = async (
  * @param id - ID layanan spesialis
  * @returns Promise dengan respons API
  */
-export const deleteLayananSpesialis = async (id: number) => {
+export const deleteLayananSpesialis = async (id: string) => {
   const response = await axios.delete<{ success: boolean; message: string }>(
     `${BASE_URL}/api/layanan-spesialis/${id}`,
     { headers: authHeader() }

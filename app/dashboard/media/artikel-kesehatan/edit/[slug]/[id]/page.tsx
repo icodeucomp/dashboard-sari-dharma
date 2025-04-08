@@ -4,10 +4,14 @@ import { useState, useRef, useEffect } from "react";
 import Icon from "@mdi/react";
 import { mdiUpload } from "@mdi/js";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import type { WysiwygEditorHandle } from "@/app/components/WysiwygEditor";
-import { createArtikelKesehatan } from "@/app/services/artikelKesehatanService";
+import { 
+  getArtikelKesehatanById, 
+  updateArtikelKesehatan
+} from "@/app/services/artikelKesehatanService";
 import { getMasterDokter, DokterItem } from "@/app/services/masterDokterService";
 import { getKategoriList, createKategori, Kategori } from "@/app/services/masterKategoriService";
 import { KategoriSelect, OptionType } from "@/app/components/CreatableSelect";
@@ -20,11 +24,13 @@ const WysiwygEditor = dynamic(() => import('@/app/components/WysiwygEditor'), {
 });
 
 /**
- * Halaman untuk menambahkan Artikel Kesehatan baru
+ * Halaman untuk mengedit Artikel Kesehatan
  * @returns {JSX.Element}
  */
-export default function AddArtikelKesehatan() {
+export default function EditArtikelKesehatan() {
   const router = useRouter();
+  const { slug, id } = useParams<{ slug: string; id: string }>();
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost";
   
   // State untuk form
   const [kategoriId, setKategoriId] = useState("");
@@ -32,8 +38,10 @@ export default function AddArtikelKesehatan() {
   const [konten, setKonten] = useState("");
   const [dokterIds, setDokterIds] = useState<string[]>([]);
   const [thumbnail, setThumbnail] = useState<File | null>(null);
+  const [currentThumbnail, setCurrentThumbnail] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   // State untuk dropdown
   const [kategoriOptions, setKategoriOptions] = useState<OptionType[]>([]);
@@ -42,6 +50,41 @@ export default function AddArtikelKesehatan() {
   const [loadingDokter, setLoadingDokter] = useState(false);
   
   const editorRef = useRef<WysiwygEditorHandle>(null);
+
+  /**
+   * Fungsi untuk memuat data artikel kesehatan dari API berdasarkan ID
+   */
+  const fetchArtikelKesehatan = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getArtikelKesehatanById(slug as string, id as string);
+      
+      if (response.success) {
+        const data = response.data;
+        setJudul(data.judul);
+        setKategoriId(data.kategori_id);
+        setKonten(data.konten);
+        setCurrentThumbnail(data.foto || "");
+        
+        // Set dokter IDs jika ada
+        if (data.dokter_terkait && Array.isArray(data.dokter_terkait)) {
+          setDokterIds(data.dokter_terkait);
+        }
+        
+        // Set konten ke editor jika ref tersedia
+        if (editorRef.current) {
+          editorRef.current.setContent(data.konten);
+        }
+      } else {
+        setError("Gagal memuat data artikel kesehatan");
+      }
+    } catch (error) {
+      console.error("Error fetching artikel kesehatan:", error);
+      setError("Gagal memuat data artikel kesehatan");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   /**
    * Fungsi untuk mengubah data kategori menjadi format opsi dropdown
@@ -109,7 +152,7 @@ export default function AddArtikelKesehatan() {
       return { success: false };
     }
   };
-
+  
   /**
    * Fungsi untuk memuat opsi dokter
    */
@@ -140,7 +183,8 @@ export default function AddArtikelKesehatan() {
   useEffect(() => {
     fetchKategoriOptions();
     fetchDokterOptions();
-  }, []);
+    fetchArtikelKesehatan();
+  }, [id, slug]);
 
   /**
    * Fungsi untuk menangani unggahan thumbnail
@@ -153,18 +197,21 @@ export default function AddArtikelKesehatan() {
   };
 
   /**
-   * Fungsi untuk mereset form ke nilai awal
+   * Fungsi untuk menangani perubahan select multiple dokter
+   * @param selected - Opsi yang dipilih dari react-select
+   */
+  const handleDokterSelectChange = (selected: readonly OptionType[]) => {
+    const selectedIds = selected.map(option => option.value);
+    setDokterIds(selectedIds);
+  };
+
+  /**
+   * Fungsi untuk mereset form ke data awal
    */
   const handleResetForm = () => {
-    setKategoriId("");
-    setJudul("");
-    setKonten("");
-    setDokterIds([]);
+    fetchArtikelKesehatan();
     setThumbnail(null);
     setError("");
-    if (editorRef.current) {
-      editorRef.current.setContent("");
-    }
   };
 
   /**
@@ -226,40 +273,41 @@ export default function AddArtikelKesehatan() {
         formData.append("foto", thumbnail);
       }
 
-      const response = await createArtikelKesehatan(formData);
+      const response = await updateArtikelKesehatan(id as string, formData);
 
       if (response.success) {
         // Redirect ke halaman artikel kesehatan setelah berhasil
         router.push("/dashboard/media/artikel-kesehatan");
       } else {
-        setError("Gagal menambahkan artikel kesehatan");
+        setError("Gagal mengupdate artikel kesehatan");
       }
     } catch (error: any) {
-      console.error("Error creating artikel kesehatan:", error);
+      console.error("Error updating artikel kesehatan:", error);
       setError(
         error.response?.data?.message || 
-        "Terjadi kesalahan saat menambahkan artikel kesehatan"
+        "Terjadi kesalahan saat mengupdate artikel kesehatan"
       );
     } finally {
       setLoading(false);
     }
   };
 
-  /**
-   * Fungsi untuk menangani perubahan select multiple dokter
-   * @param selected - Opsi yang dipilih dari react-select
-   */
-  const handleDokterSelectChange = (selected: readonly OptionType[]) => {
-    const selectedIds = selected.map(option => option.value);
-    setDokterIds(selectedIds);
-  };
+  if (isLoading) {
+    return (
+      <div className="p-6">
+        <div className="text-center py-8">
+          <p className="text-gray-600 dark:text-gray-400">Memuat data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
       {/* Header halaman */}
       <div className="flex justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Tambah Artikel Kesehatan Baru
+          Edit Artikel Kesehatan
         </h1>
         <Link
           href="/dashboard/media/artikel-kesehatan"
@@ -269,7 +317,7 @@ export default function AddArtikelKesehatan() {
         </Link>
       </div>
 
-      {/* Form Tambah Artikel */}
+      {/* Form Edit Artikel */}
       <form
         onSubmit={handleSubmit}
         className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 border border-gray-200 dark:border-gray-700"
@@ -281,35 +329,58 @@ export default function AddArtikelKesehatan() {
           </div>
         )}
 
-        {/* Upload Thumbnail */}
+        {/* Thumbnail Saat Ini dan Upload Thumbnail Baru */}
         <div className="mb-6">
-          <label
-            htmlFor="foto"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-          >
-            Foto Artikel <span className="text-red-500">*</span>
-          </label>
+          <div className="flex items-center mb-4">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 w-1/4">
+              Foto Artikel Saat Ini
+            </label>
+            <div className="flex-1">
+              {currentThumbnail ? (
+                <div className="relative h-48 w-full max-w-xs">
+                  <Image 
+                    src={`${BASE_URL}/storage/${currentThumbnail}`} 
+                    alt="Foto Artikel" 
+                    width={300}
+                    height={200}
+                    className="h-48 object-cover border"
+                  />
+                </div>
+              ) : (
+                <p className="text-gray-500 dark:text-gray-400">Tidak ada foto</p>
+              )}
+            </div>
+          </div>
+          
           <div className="flex items-center">
             <label
               htmlFor="foto"
-              className={`flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md cursor-pointer ${
-                loading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 w-1/4"
             >
-              <Icon path={mdiUpload} size={1} className="mr-2" />
-              Pilih Gambar
+              Upload Foto Baru
             </label>
-            <input
-              id="foto"
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden"
-              disabled={loading}
-            />
-            <span className="ml-4 text-sm text-gray-500 dark:text-gray-400">
-              {thumbnail ? thumbnail.name : "max. 5mb"}
-            </span>
+            <div className="flex items-center flex-1">
+              <label
+                htmlFor="foto"
+                className={`flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md cursor-pointer ${
+                  loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+              >
+                <Icon path={mdiUpload} size={1} className="mr-2" />
+                Pilih Gambar
+              </label>
+              <input
+                id="foto"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+                disabled={loading}
+              />
+              <span className="ml-4 text-sm text-gray-500 dark:text-gray-400">
+                {thumbnail ? thumbnail.name : "max. 5mb"}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -438,7 +509,7 @@ export default function AddArtikelKesehatan() {
                 : "bg-orange-600 hover:bg-orange-700 text-white"
             }`}
           >
-            {loading ? "Saving..." : "Simpan"}
+            {loading ? "Saving..." : "Update"}
           </button>
         </div>
       </form>
