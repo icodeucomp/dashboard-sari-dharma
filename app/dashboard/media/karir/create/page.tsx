@@ -53,7 +53,7 @@ export default function AddKarir() {
     // Validasi format URL
     try {
       new URL(linkPendaftaran);
-    } catch (e) {
+    } catch {
       setError("Link pendaftaran harus berupa URL yang valid.");
       return false;
     }

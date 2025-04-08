@@ -618,7 +618,7 @@ export default function EditJadwalDokter() {
                 </label>
                 <input
                   type="number"
-                  value={item.tahun_selesai}
+                  value={item.tahun_selesai ?? ""}
                   onChange={(e) =>
                     handleChangeEdukasiKarir(
                       index,

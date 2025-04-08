@@ -56,7 +56,7 @@ export default function Login() {
         
         // Redirect ke dashboard setelah login berhasil
         const params = new URLSearchParams(window.location.search);
-        const from = params.get('from') || '/dashboard';
+        const from = params.get('from') || '/dashboard/layanan-unggulan';
         router.push(from);
       } else {
         setError("Format respons login tidak valid.");

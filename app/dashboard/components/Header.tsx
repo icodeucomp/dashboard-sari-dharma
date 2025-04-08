@@ -84,7 +84,7 @@ export default function Header({ toggleSidebar, isSidebarOpen }: {
       {/* Bagian kanan - Pemilih bahasa dan profil pengguna */}
       <div className="flex items-center space-x-3">
         {/* Pemilih bahasa */}
-        <div className="relative" ref={languageDropdownRef}>
+        <div className="relative hidden" ref={languageDropdownRef}>
           <button
             onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
             className="flex items-center space-x-2 p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700"

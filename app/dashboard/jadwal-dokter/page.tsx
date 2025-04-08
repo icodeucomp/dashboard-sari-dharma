@@ -34,7 +34,7 @@ export default function JadwalDokter() {
   const [jadwalDokter, setJadwalDokter] = useState<JadwalDokterItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalItems, setTotalItems] = useState(0);
-  const [lastPage, setLastPage] = useState(1);
+  const [, setLastPage] = useState(1);
   const [isDeleting, setIsDeleting] = useState(false);
   const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost";
 

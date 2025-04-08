@@ -4,7 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Icon from "@mdi/react";
 import { mdiUpload } from "@mdi/js";
-import { getSertifikasiPenghargaanById, updateSertifikasiPenghargaan } from "@/app/services/sertifikasiPenghargaanService";
+import Image from "next/image";
+import {
+  getSertifikasiPenghargaanById,
+  updateSertifikasiPenghargaan,
+} from "@/app/services/sertifikasiPenghargaanService";
 
 /**
  * Halaman untuk mengedit Sertifikasi & Penghargaan
@@ -13,6 +17,7 @@ import { getSertifikasiPenghargaanById, updateSertifikasiPenghargaan } from "@/a
 export default function EditSertifikasiPenghargaan() {
   const router = useRouter();
   const { slug, id } = useParams<{ slug: string; id: string }>();
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost";
 
   const [judul, setJudul] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -29,7 +34,10 @@ export default function EditSertifikasiPenghargaan() {
   const fetchSertifikasiPenghargaan = async () => {
     try {
       setIsLoading(true);
-      const response = await getSertifikasiPenghargaanById(slug as string, id as string);
+      const response = await getSertifikasiPenghargaanById(
+        slug as string,
+        id as string
+      );
 
       if (response.success) {
         const data = response.data;
@@ -103,7 +111,10 @@ export default function EditSertifikasiPenghargaan() {
         formData.append("foto", foto);
       }
 
-      const response = await updateSertifikasiPenghargaan(id as string, formData);
+      const response = await updateSertifikasiPenghargaan(
+        id as string,
+        formData
+      );
 
       if (response.success) {
         router.push("/dashboard/media/sertifikasi-penghargaan");
@@ -179,9 +190,7 @@ export default function EditSertifikasiPenghargaan() {
 
         {/* File Saat Ini */}
         <div className="mb-6 flex items-center">
-          <label
-            className="w-1/4 text-sm font-medium text-gray-700 dark:text-gray-300"
-          >
+          <label className="w-1/4 text-sm font-medium text-gray-700 dark:text-gray-300">
             File Saat Ini
           </label>
           <div className="w-3/4">
@@ -237,17 +246,17 @@ export default function EditSertifikasiPenghargaan() {
 
         {/* Foto Saat Ini */}
         <div className="mb-6 flex items-center">
-          <label
-            className="w-1/4 text-sm font-medium text-gray-700 dark:text-gray-300"
-          >
+          <label className="w-1/4 text-sm font-medium text-gray-700 dark:text-gray-300">
             Foto Saat Ini
           </label>
           <div className="w-3/4">
             {currentFoto ? (
-              <img
-                src={`${process.env.NEXT_PUBLIC_API_URL}/storage/${currentFoto}`}
+              <Image
+                src={`${BASE_URL}/storage/${currentFoto}`}
                 alt="Foto Sertifikasi"
-                className="w-32 h-32 object-cover border"
+                width={300}
+                height={200}
+                className="w-32 h-32 object-cover border rounded-md"
               />
             ) : (
               <p className="text-gray-500 dark:text-gray-400">Tidak ada foto</p>
@@ -278,7 +287,9 @@ export default function EditSertifikasiPenghargaan() {
               type="file"
               accept=".jpg,.jpeg,.png"
               className="hidden"
-              onChange={(e) => setFoto(e.target.files ? e.target.files[0] : null)}
+              onChange={(e) =>
+                setFoto(e.target.files ? e.target.files[0] : null)
+              }
               disabled={loading}
             />
             {foto && (

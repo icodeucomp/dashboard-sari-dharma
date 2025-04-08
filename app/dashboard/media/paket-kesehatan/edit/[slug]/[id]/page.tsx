@@ -9,7 +9,6 @@ import { useParams, useRouter } from "next/navigation";
 import { 
   getPaketKesehatanById, 
   updatePaketKesehatan, 
-  PaketKesehatanItem
 } from "@/app/services/paketKesehatanService";
 import { getKategoriList, createKategori, Kategori } from "@/app/services/masterKategoriService";
 import { KategoriSelect, OptionType } from "@/app/components/CreatableSelect";
@@ -35,7 +34,6 @@ export default function EditPaketKesehatan() {
   const [isLoading, setIsLoading] = useState(true);
 
   // State untuk data dropdown
-  const [kategoriList, setKategoriList] = useState<Kategori[]>([]);
   const [loadingDropdown, setLoadingDropdown] = useState(true);
 
   // Update kategori state

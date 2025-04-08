@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import CreatableSelect from 'react-select/creatable';
-import { ActionMeta, StylesConfig } from 'react-select';
+import { StylesConfig } from 'react-select';
 
 /**
  * Interface untuk opsi dalam dropdown
@@ -88,7 +88,6 @@ export const KategoriSelect: React.FC<KategoriSelectProps> = ({
    */
   const handleChange = (
     newValue: OptionType | null,
-    actionMeta: ActionMeta<OptionType>
   ) => {
     onChange(newValue?.value || "");
   };

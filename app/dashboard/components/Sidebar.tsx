@@ -5,7 +5,6 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import Icon from "@mdi/react";
 import {
-  mdiViewDashboard,
   mdiStarOutline,
   mdiStethoscope,
   mdiHospitalBuilding,
@@ -49,9 +48,6 @@ const NavItem = ({ icon, title, href, isActive, isOpen, subItems = [] }: {
   // Hal ini akan menandai parent menu juga aktif
   const hasActiveChild = subItems.some((item) => pathname.startsWith(item.href));
   
-  // Cek jika path saat ini tepat sama dengan submenu
-  const hasExactActiveChild = subItems.some((item) => pathname === item.href);
-
   // State untuk mengatur apakah submenu terbuka
   const [expanded, setExpanded] = useState(hasActiveChild);
 
@@ -139,7 +135,7 @@ export default function Sidebar({ isOpen, toggleSidebar }: {
 
   // Daftar menu navigasi
   const navItems = [
-    { title: "Dashboard", href: "/dashboard", icon: mdiViewDashboard },
+    // { title: "Dashboard", href: "/dashboard", icon: mdiViewDashboard },
     { title: "Layanan Unggulan", href: "/dashboard/layanan-unggulan", icon: mdiStarOutline },
     { title: "Layanan Spesialis", href: "/dashboard/layanan-spesialis", icon: mdiStethoscope },
     { title: "Layanan & Fasilitas", href: "/dashboard/layanan-fasilitas", icon: mdiHospitalBuilding },
