@@ -44,17 +44,23 @@ const NavItem = ({ icon, title, href, isActive, isOpen, subItems = [] }: {
 }) => {
   const pathname = usePathname();
 
-  // Cek apakah ada subitem yang aktif
-  const hasActiveChild = subItems.some((item) => pathname === item.href);
+  // Cek apakah ada subitem yang aktif dengan lebih teliti
+  // Menggunakan startsWith untuk mendeteksi path seperti /dashboard/media/sertifikasi-penghargaan
+  // Hal ini akan menandai parent menu juga aktif
+  const hasActiveChild = subItems.some((item) => pathname.startsWith(item.href));
+  
+  // Cek jika path saat ini tepat sama dengan submenu
+  const hasExactActiveChild = subItems.some((item) => pathname === item.href);
 
   // State untuk mengatur apakah submenu terbuka
   const [expanded, setExpanded] = useState(hasActiveChild);
 
+  // Selalu perbarui expanded state saat pathname berubah
   useEffect(() => {
     if (hasActiveChild) {
       setExpanded(true); // Buka submenu jika ada subitem aktif
     }
-  }, [hasActiveChild]);
+  }, [pathname, hasActiveChild]);
 
   return (
     <div className="mb-1">
@@ -75,7 +81,7 @@ const NavItem = ({ icon, title, href, isActive, isOpen, subItems = [] }: {
         <button
           onClick={() => setExpanded(!expanded)}
           className={`w-full flex items-center justify-between px-4 py-2 text-sm font-medium rounded-md transition-colors
-            ${hasActiveChild || expanded
+            ${hasActiveChild
               ? "bg-[#e05d00] text-white"
               : "text-white hover:bg-[#e05d00]"
             }
@@ -93,20 +99,26 @@ const NavItem = ({ icon, title, href, isActive, isOpen, subItems = [] }: {
 
       {isOpen && expanded && subItems.length > 0 && (
         <div className="ml-4 mt-1">
-          {subItems.map((item, index) => (
-            <Link
-              key={index}
-              href={item.href}
-              className={`flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                pathname === item.href
-                  ? "bg-white text-[#C75000]"
-                  : "text-white hover:bg-[#e05d00]"
-              }`}
-            >
-              <Icon path={item.icon} size={1} className="mr-3" />
-              {item.title}
-            </Link>
-          ))}
+          {subItems.map((item, index) => {
+            // Periksa aktif dengan exact match dan juga dengan startsWith
+            // untuk menangani halaman detail dengan slug dan parameter lainnya
+            const isSubItemActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            
+            return (
+              <Link
+                key={index}
+                href={item.href}
+                className={`flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                  isSubItemActive
+                    ? "bg-white text-[#C75000]"
+                    : "text-white hover:bg-[#e05d00]"
+                }`}
+              >
+                <Icon path={item.icon} size={1} className="mr-3" />
+                {item.title}
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

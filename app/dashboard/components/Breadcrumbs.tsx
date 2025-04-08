@@ -30,7 +30,8 @@ const isSlug = (segment: string): boolean => {
     'rekam-medis', 'pemeriksaan', 'resep', 'keuangan', 'pembayaran', 'laporan',
     'pengaturan', 'profile', 'layanan-unggulan', 'layanan-spesialis', 
     'layanan-fasilitas', 'jadwal-dokter', 'reviews', 'media', 'create', 'edit',
-    'artikel-kesehatan', 'paket-kesehatan', 'event-community'
+    'artikel-kesehatan', 'paket-kesehatan', 'event-community', 'indikator-mutu',
+    'karir', 'sertifikasi-penghargaan'
   ];
   
   return !commonSegments.includes(segment) && /^[a-z0-9-]+$/.test(segment);
@@ -79,7 +80,11 @@ export default function Breadcrumbs() {
     edit: 'Edit',
     'artikel-kesehatan': 'Artikel Kesehatan',
     'paket-kesehatan': 'Paket Kesehatan',
-    'event-community': 'Event & Community'
+    'event-community': 'Event & Community',
+    'indikator-mutu': 'Indikator Mutu',
+    karir: 'Karir',
+    // Sertifikasi Penghargaan
+    'sertifikasi-penghargaan': 'Sertifikasi & Penghargaan',
   };
 
   // Segment yang akan ditampilkan sebagai teks biasa (bukan link)

@@ -1,24 +1,63 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import Icon from "@mdi/react";
 import { mdiUpload } from "@mdi/js";
-import { createKarir } from "@/app/services/karirService";
+import { getKarirById, updateKarir } from "@/app/services/karirService";
 
 /**
- * Halaman untuk menambahkan Karir baru
+ * Halaman untuk mengedit Karir
  * @returns {JSX.Element}
  */
-export default function AddKarir() {
+export default function EditKarir() {
+  const router = useRouter();
+  const { slug, id } = useParams<{ slug: string; id: string }>();
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost";
+
+  // State untuk form
   const [divisi, setDivisi] = useState("");
   const [posisi, setPosisi] = useState("");
   const [linkPendaftaran, setLinkPendaftaran] = useState("");
   const [foto, setFoto] = useState<File | null>(null);
+  const [currentFoto, setCurrentFoto] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+
+  /**
+   * Fungsi untuk memuat data karir dari API berdasarkan ID
+   */
+  const fetchKarir = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getKarirById(slug as string, id as string);
+      
+      if (response.success) {
+        const data = response.data;
+        setDivisi(data.divisi);
+        setPosisi(data.posisi);
+        setLinkPendaftaran(data.link_pendaftaran);
+        setCurrentFoto(data.foto || "");
+      } else {
+        setError("Gagal memuat data karir");
+      }
+    } catch (error) {
+      console.error("Error fetching karir:", error);
+      setError("Gagal memuat data karir");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Memuat data saat komponen dimount
+   */
+  useEffect(() => {
+    fetchKarir();
+  }, [id, slug]);
 
   /**
    * Fungsi untuk menangani perubahan file yang diupload
@@ -58,12 +97,7 @@ export default function AddKarir() {
       return false;
     }
 
-    if (!foto) {
-      setError("Foto wajib diupload.");
-      return false;
-    }
-
-    // Validasi ukuran file (max 5MB)
+    // Validasi ukuran file (max 5MB) jika ada file baru
     if (foto && foto.size > 5 * 1024 * 1024) {
       setError("Ukuran file tidak boleh lebih dari 5MB.");
       return false;
@@ -97,19 +131,19 @@ export default function AddKarir() {
         formData.append("foto", foto);
       }
 
-      const response = await createKarir(formData);
+      const response = await updateKarir(id as string, formData);
 
       if (response.success) {
         // Redirect ke halaman karir setelah berhasil
         router.push("/dashboard/media/karir");
       } else {
-        setError("Gagal menambahkan karir");
+        setError("Gagal mengupdate karir");
       }
     } catch (error: any) {
-      console.error("Error creating karir:", error);
+      console.error("Error updating karir:", error);
       setError(
         error.response?.data?.message || 
-        "Terjadi kesalahan saat menambahkan karir"
+        "Terjadi kesalahan saat mengupdate karir"
       );
     } finally {
       setLoading(false);
@@ -117,22 +151,30 @@ export default function AddKarir() {
   };
 
   /**
-   * Fungsi untuk mereset formulir
+   * Fungsi untuk mereset form ke data awal
    */
-  const handleReset = () => {
-    setDivisi("");
-    setPosisi("");
-    setLinkPendaftaran("");
+  const handleResetForm = () => {
+    fetchKarir();
     setFoto(null);
     setError("");
   };
+
+  if (isLoading) {
+    return (
+      <div className="p-6">
+        <div className="text-center py-8">
+          <p className="text-gray-600 dark:text-gray-400">Memuat data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
       {/* Header halaman */}
       <div className="flex justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Tambah Karir Baru
+          Edit Karir
         </h1>
         <Link
           href="/dashboard/media/karir"
@@ -142,7 +184,7 @@ export default function AddKarir() {
         </Link>
       </div>
 
-      {/* Form Tambah Karir */}
+      {/* Form Edit Karir */}
       <form
         onSubmit={handleSubmit}
         className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 border border-gray-200 dark:border-gray-700"
@@ -154,13 +196,33 @@ export default function AddKarir() {
           </div>
         )}
 
-        {/* Upload Foto */}
+        {/* Foto Saat Ini */}
+        {currentFoto && (
+          <div className="mb-6 flex items-center">
+            <label className="w-1/4 text-sm font-medium text-gray-700 dark:text-gray-300">
+              Foto Saat Ini
+            </label>
+            <div className="w-3/4">
+              <div className="relative h-48 w-full max-w-xs">
+                <Image 
+                  src={`${BASE_URL}/storage/${currentFoto}`} 
+                  alt="Foto Karir" 
+                  width={300}
+                  height={200}
+                  className="h-48 object-cover border"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Upload Foto Baru */}
         <div className="mb-6 flex items-center">
           <label
             htmlFor="foto"
             className="w-1/4 text-sm font-medium text-gray-700 dark:text-gray-300"
           >
-            Upload Foto <span className="text-red-500">*</span>
+            Upload Foto Baru
           </label>
           <div className="w-3/4 flex items-center gap-4">
             <label
@@ -250,7 +312,7 @@ export default function AddKarir() {
         <div className="flex justify-end gap-4 mt-8">
           <button
             type="button"
-            onClick={handleReset}
+            onClick={handleResetForm}
             disabled={loading}
             className={`font-medium py-2 px-6 rounded-md ${
               loading 
@@ -269,7 +331,7 @@ export default function AddKarir() {
                 : "bg-orange-600 hover:bg-orange-700 text-white"
             }`}
           >
-            {loading ? "Saving..." : "Simpan"}
+            {loading ? "Saving..." : "Update"}
           </button>
         </div>
       </form>
