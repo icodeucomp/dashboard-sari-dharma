@@ -13,6 +13,18 @@ import {
 import { useRouter } from "next/navigation";
 
 /**
+ * Interface untuk data user
+ */
+interface UserData {
+  id: string;
+  name: string;
+  email: string;
+  email_verified_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
  * Komponen Header untuk dashboard
  * @param {Function} toggleSidebar - Fungsi untuk toggle sidebar
  * @param {boolean} isSidebarOpen - Status sidebar terbuka/tertutup
@@ -25,9 +37,27 @@ export default function Header({ toggleSidebar, isSidebarOpen }: {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [userData, setUserData] = useState<UserData | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  // Mengambil data user dari localStorage saat komponen dimount
+  useEffect(() => {
+    const getUserData = () => {
+      try {
+        const userDataString = localStorage.getItem('user');
+        if (userDataString) {
+          const parsedUserData = JSON.parse(userDataString);
+          setUserData(parsedUserData);
+        }
+      } catch (error) {
+        console.error('Gagal mengambil data user:', error);
+      }
+    };
+
+    getUserData();
+  }, []);
 
   // Fungsi untuk menangani klik di luar dropdown
   useEffect(() => {
@@ -119,8 +149,12 @@ export default function Header({ toggleSidebar, isSidebarOpen }: {
           >
             <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
             <div className="hidden md:block text-left">
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Asya</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Admin</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {userData?.name || "User"}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {userData?.email || "user@example.com"}
+              </p>
             </div>
             <Icon path={mdiChevronDown} size={0.7} />
           </button>

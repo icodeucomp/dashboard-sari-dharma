@@ -20,6 +20,8 @@ import {
   mdiChartLine,
   mdiBullhornOutline,
   mdiInstagram,
+  mdiTagMultiple,
+  mdiDoctor,
 } from "@mdi/js";
 import Logo from "@/app/assets/images/logo.webp";
 
@@ -140,6 +142,8 @@ export default function Sidebar({ isOpen, toggleSidebar }: {
     { title: "Layanan Spesialis", href: "/dashboard/layanan-spesialis", icon: mdiStethoscope },
     { title: "Layanan & Fasilitas", href: "/dashboard/layanan-fasilitas", icon: mdiHospitalBuilding },
     { title: "Jadwal Dokter", href: "/dashboard/jadwal-dokter", icon: mdiCalendarCheck },
+    { title: "Master Dokter", href: "/dashboard/master-dokter", icon: mdiDoctor },
+    { title: "Master Kategori", href: "/dashboard/master-kategori", icon: mdiTagMultiple },
     // { title: "Reviews", href: "/dashboard/reviews", icon: mdiCommentTextOutline },
     {
       title: "Media & Informasi",

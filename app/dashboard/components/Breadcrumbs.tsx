@@ -31,7 +31,7 @@ const isSlug = (segment: string): boolean => {
     'pengaturan', 'profile', 'layanan-unggulan', 'layanan-spesialis', 
     'layanan-fasilitas', 'jadwal-dokter', 'reviews', 'media', 'create', 'edit',
     'artikel-kesehatan', 'paket-kesehatan', 'event-community', 'indikator-mutu',
-    'karir', 'sertifikasi-penghargaan'
+    'karir', 'sertifikasi-penghargaan', 'master-dokter', 'master-kategori'
   ];
   
   return !commonSegments.includes(segment) && /^[a-z0-9-]+$/.test(segment);
@@ -82,6 +82,8 @@ export default function Breadcrumbs() {
     'paket-kesehatan': 'Paket Kesehatan',
     'event-community': 'Event & Community',
     'indikator-mutu': 'Indikator Mutu',
+    'master-dokter': 'Master Dokter',
+    'master-kategori': 'Master Kategori',
     karir: 'Karir',
     // Sertifikasi Penghargaan
     'sertifikasi-penghargaan': 'Sertifikasi & Penghargaan',

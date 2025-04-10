@@ -49,10 +49,8 @@ export default function Login() {
         // Menyimpan token di cookie untuk middleware
         document.cookie = `auth_token=${response.data.token}; path=/; max-age=${60 * 60 * 24 * 7}`; // 7 hari
         
-        // Menyimpan data user di localStorage jika rememberMe dicentang
-        if (rememberMe) {
-          localStorage.setItem('user', JSON.stringify(response.data.user));
-        }
+        // Selalu menyimpan data user di localStorage untuk ditampilkan di header
+        localStorage.setItem('user', JSON.stringify(response.data.user));
         
         // Redirect ke dashboard setelah login berhasil
         const params = new URLSearchParams(window.location.search);
