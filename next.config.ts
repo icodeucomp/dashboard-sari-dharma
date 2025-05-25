@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'aksd.sytes.net',
+        hostname: 'aksd.aacassandra.web.id',
         port: '',
         pathname: '/**',
       },

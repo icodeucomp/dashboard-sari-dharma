@@ -24,7 +24,7 @@ export default function MasterKategori() {
   const [kategoriList, setKategoriList] = useState<Kategori[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalItems, setTotalItems] = useState(0);
-  const [lastPage, setLastPage] = useState(1);
+  const [, setLastPage] = useState(1);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // State untuk filter dan modal
