@@ -26,8 +26,13 @@ export default function KontenSocialMedia() {
       const response = await getKontenSocialMedia({ type });
 
       if (response.success && response.data.data.length > 0) {
-        const konten = response.data.data[0];
-        setLinks(konten.links || []);
+        const konten = response.data.data as any;
+        const beforePush: Array<string> = []
+        konten.forEach((item: any) => {
+          beforePush.push(item.links);
+        })
+        setLinks(beforePush);
+        console.log("Konten Social Media:", links);
       } else {
         setLinks([]);
       }
