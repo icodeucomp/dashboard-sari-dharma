@@ -13,6 +13,7 @@ import {
   Dokter,
   Spesialis,
 } from "@/app/services/jadwalDokterService";
+import AsyncSelect from "react-select/async";
 
 /**
  * Halaman untuk menambahkan jadwal dokter baru
@@ -22,8 +23,54 @@ export default function AddJadwalDokter() {
   const router = useRouter();
 
   // State untuk form
-  const [dokterId, setDokterId] = useState<string>("");
-  const [spesialisId, setSpesialisId] = useState<string>("");
+  // State untuk react-select dokter dan spesialis
+  const [selectedDokter, setSelectedDokter] = useState<{ value: string; label: string }>({ value: '', label: '' });
+  const [selectedSpesialis, setSelectedSpesialis] = useState<{ value: string; label: string }>({ value: '', label: '' });
+  /**
+   * Fungsi untuk load data dokter secara async untuk react-select
+   * @param {string} inputValue - input pencarian
+   * @returns {Promise<{value: string, label: string}[]>}
+   */
+  const loadDokterOptions = async (inputValue: string) => {
+    try {
+      const res = await getDokterList(inputValue.toLowerCase());
+      if (res.success && Array.isArray(res.data)) {
+        return res.data.map((dokter) => ({
+          value: dokter.id,
+          label: dokter.nama_dokter,
+        }));
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  };
+
+  /**
+   * Fungsi untuk load data spesialis secara async untuk react-select
+   * @param {string} inputValue - input pencarian
+   * @returns {Promise<{value: string, label: string}[]>}
+   */
+  const loadSpesialisOptions = async (inputValue: string) => {
+    try {
+      const res = await getSpesialisList();
+      if (res.success && Array.isArray(res.data)) {
+        return res.data
+          .filter((spesialis) =>
+            spesialis.nama_layanan
+              .toLowerCase()
+              .includes(inputValue.toLowerCase())
+          )
+          .map((spesialis) => ({
+            value: spesialis.id,
+            label: spesialis.nama_layanan,
+          }));
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  };
   const [backgroundDokter, setBackgroundDokter] = useState("");
   const [foto, setFoto] = useState<File | null>(null);
   const [jadwal, setJadwal] = useState([
@@ -179,8 +226,8 @@ export default function AddJadwalDokter() {
    * Fungsi untuk mereset form ke nilai awal
    */
   const handleResetForm = () => {
-    setDokterId("");
-    setSpesialisId("");
+    setSelectedDokter({ value: '', label: '' });
+    setSelectedSpesialis({ value: '', label: '' });
     setBackgroundDokter("");
     setFoto(null);
     setJadwal([{ hari: "", jam_mulai: "", jam_selesai: "" }]);
@@ -194,12 +241,12 @@ export default function AddJadwalDokter() {
    */
   const validateForm = () => {
     // Validasi dasar
-    if (!dokterId) {
+    if (!selectedDokter.value) {
       setError("Dokter harus dipilih");
       return false;
     }
 
-    if (!spesialisId) {
+    if (!selectedSpesialis.value) {
       setError("Spesialis harus dipilih");
       return false;
     }
@@ -240,8 +287,8 @@ export default function AddJadwalDokter() {
 
       // Mempersiapkan FormData untuk unggah file
       const formData = new FormData();
-      formData.append("dokter_id", dokterId.toString());
-      formData.append("spesialis_id", spesialisId.toString());
+      formData.append("dokter_id", selectedDokter.value);
+      formData.append("spesialis_id", selectedSpesialis.value);
 
       if (backgroundDokter) {
         formData.append("background_dokter", backgroundDokter);
@@ -329,7 +376,7 @@ export default function AddJadwalDokter() {
           </div>
         </div>
 
-        {/* Pilih Dokter */}
+        {/* Pilih Dokter dengan react-select */}
         <div className="mb-6 flex items-center">
           <label
             htmlFor="dokter"
@@ -337,28 +384,38 @@ export default function AddJadwalDokter() {
           >
             Dokter <span className="text-red-500">*</span>
           </label>
-          <select
-            id="dokter"
-            value={dokterId}
-            onChange={(e) => setDokterId(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            required
-            disabled={loading || loadingDropdown}
-          >
-            <option value="">Pilih Dokter</option>
-            {Array.isArray(dokterList) ? (
-              dokterList.map((dokter) => (
-                <option key={dokter.id} value={dokter.id}>
-                  {dokter.nama_dokter}
-                </option>
-              ))
-            ) : (
-              <option value="">Data dokter tidak tersedia</option>
-            )}
-          </select>
+          <div className="flex-1">
+            {/*
+              Komponen AsyncSelect digunakan untuk memilih dokter secara async
+              Lihat dokumentasi react-select AsyncSelect
+            */}
+            <AsyncSelect
+              cacheOptions
+              defaultOptions={dokterList.map((dokter) => ({ value: dokter.id, label: dokter.nama_dokter }))}
+              loadOptions={loadDokterOptions}
+              inputId="dokter"
+              classNamePrefix="react-select"
+              isSearchable
+              isClearable
+              isDisabled={loading || loadingDropdown}
+              placeholder="Pilih Dokter..."
+              value={selectedDokter.value ? selectedDokter : null}
+              onChange={(option) => {
+                setSelectedDokter(option ? { value: option.value, label: option.label } : { value: '', label: '' });
+              }}
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  minHeight: 42,
+                }),
+                menu: (base) => ({ ...base, zIndex: 20 }),
+              }}
+              required
+            />
+          </div>
         </div>
 
-        {/* Pilih Spesialis */}
+        {/* Pilih Spesialis dengan react-select */}
         <div className="mb-6 flex items-center">
           <label
             htmlFor="spesialis"
@@ -366,26 +423,37 @@ export default function AddJadwalDokter() {
           >
             Spesialis <span className="text-red-500">*</span>
           </label>
-          <select
-            id="spesialis"
-            value={spesialisId}
-            onChange={(e) => setSpesialisId(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            required
-            disabled={loading || loadingDropdown}
-          >
-            <option value="">Pilih Spesialis</option>
-            {Array.isArray(spesialisList) ? (
-              spesialisList.map((spesialis) => (
-                <option key={spesialis.id} value={spesialis.id}>
-                  {spesialis.nama_layanan}
-                </option>
-              ))
-            ) : (
-              <option value="">Data spesialis tidak tersedia</option>
-            )}
-          </select>
+          <div className="flex-1">
+            {/*
+              Komponen AsyncSelect digunakan untuk memilih spesialis secara async
+              Lihat dokumentasi react-select AsyncSelect
+            */}
+            <AsyncSelect
+              cacheOptions
+              defaultOptions={spesialisList.map((spesialis) => ({ value: spesialis.id, label: spesialis.nama_layanan }))}
+              loadOptions={loadSpesialisOptions}
+              inputId="spesialis"
+              classNamePrefix="react-select"
+              isSearchable
+              isClearable
+              isDisabled={loading || loadingDropdown}
+              placeholder="Pilih Spesialis..."
+              value={selectedSpesialis.value ? selectedSpesialis : null}
+              onChange={(option) => {
+                setSelectedSpesialis(option ? { value: option.value, label: option.label } : { value: '', label: '' });
+              }}
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  minHeight: 42,
+                }),
+                menu: (base) => ({ ...base, zIndex: 20 }),
+              }}
+              required
+            />
+          </div>
         </div>
+import AsyncSelect from "react-select/async";
 
         {/* Background Dokter */}
         <div className="mb-6 flex">

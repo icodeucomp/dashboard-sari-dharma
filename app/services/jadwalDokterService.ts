@@ -109,10 +109,13 @@ export interface PaginationParams {
  * @returns Promise dengan respons API
  */
 export const getJadwalDokter = async (params: PaginationParams = {}) => {
-  const response = await axios.get<ApiResponse>(`${BASE_URL}/api/jadwal-dokter`, {
-    params,
-    headers: authHeader(),
-  });
+  const response = await axios.get<ApiResponse>(
+    `${BASE_URL}/api/jadwal-dokter`,
+    {
+      params,
+      headers: authHeader(),
+    }
+  );
   return response.data;
 };
 
@@ -122,9 +125,12 @@ export const getJadwalDokter = async (params: PaginationParams = {}) => {
  * @returns Promise dengan respons API
  */
 export const getJadwalDokterById = async (id: string) => {
-  const response = await axios.get<ApiItemResponse>(`${BASE_URL}/api/jadwal-dokter/${id}`, { 
-    headers: authHeader() 
-  });
+  const response = await axios.get<ApiItemResponse>(
+    `${BASE_URL}/api/jadwal-dokter/${id}`,
+    {
+      headers: authHeader(),
+    }
+  );
   return response.data;
 };
 
@@ -134,12 +140,16 @@ export const getJadwalDokterById = async (id: string) => {
  * @returns Promise dengan respons API
  */
 export const createJadwalDokter = async (data: FormData) => {
-  const response = await axios.post<ApiItemResponse>(`${BASE_URL}/api/jadwal-dokter`, data, {
-    headers: {
-      ...authHeader(),
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+  const response = await axios.post<ApiItemResponse>(
+    `${BASE_URL}/api/jadwal-dokter`,
+    data,
+    {
+      headers: {
+        ...authHeader(),
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
   return response.data;
 };
 
@@ -151,14 +161,18 @@ export const createJadwalDokter = async (data: FormData) => {
  */
 export const updateJadwalDokter = async (id: string, data: FormData) => {
   // Tambahkan parameter _method=PUT untuk simulasi method PUT dengan POST
-  data.append('_method', 'PUT');
-  
-  const response = await axios.post<ApiItemResponse>(`${BASE_URL}/api/jadwal-dokter/${id}`, data, {
-    headers: {
-      ...authHeader(),
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+  data.append("_method", "PUT");
+
+  const response = await axios.post<ApiItemResponse>(
+    `${BASE_URL}/api/jadwal-dokter/${id}`,
+    data,
+    {
+      headers: {
+        ...authHeader(),
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
   return response.data;
 };
 
@@ -179,28 +193,35 @@ export const deleteJadwalDokter = async (id: string) => {
  * Fungsi untuk mendapatkan daftar dokter (untuk dropdown)
  * @returns Promise dengan respons API
  */
-export const getDokterList = async () => {
-  const response = await axios.get<{ success: boolean; data: Dokter[] | { data: Dokter[] } }>(
-    `${BASE_URL}/api/master-dokter`,
-    { headers: authHeader() }
-  );
-  
+export const getDokterList = async (searchName = "") => {
+  const response = await axios.get<{
+    success: boolean;
+    data: Dokter[] | { data: Dokter[] };
+  }>(`${BASE_URL}/api/master-dokter`, {
+    headers: authHeader(),
+    params: { search: searchName },
+  });
+
   // Cek struktur data respons - beberapa API mengembalikan { data: { data: [] } }
   if (response.data.success) {
     // Jika data adalah objek dengan properti data, ambil array dari sana
-    if (response.data.data && typeof response.data.data === 'object' && 'data' in response.data.data) {
+    if (
+      response.data.data &&
+      typeof response.data.data === "object" &&
+      "data" in response.data.data
+    ) {
       return {
         success: true,
-        data: response.data.data.data
+        data: response.data.data.data,
       };
     }
     // Jika data langsung berupa array
     return response.data;
   }
-  
+
   return {
     success: false,
-    data: []
+    data: [],
   };
 };
 
@@ -209,26 +230,30 @@ export const getDokterList = async () => {
  * @returns Promise dengan respons API
  */
 export const getSpesialisList = async () => {
-  const response = await axios.get<{ success: boolean; data: Spesialis[] | { data: Spesialis[] } }>(
-    `${BASE_URL}/api/layanan-spesialis`,
-    { headers: authHeader() }
-  );
-  
+  const response = await axios.get<{
+    success: boolean;
+    data: Spesialis[] | { data: Spesialis[] };
+  }>(`${BASE_URL}/api/layanan-spesialis`, { headers: authHeader() });
+
   // Cek struktur data respons - beberapa API mengembalikan { data: { data: [] } }
   if (response.data.success) {
     // Jika data adalah objek dengan properti data, ambil array dari sana
-    if (response.data.data && typeof response.data.data === 'object' && 'data' in response.data.data) {
+    if (
+      response.data.data &&
+      typeof response.data.data === "object" &&
+      "data" in response.data.data
+    ) {
       return {
         success: true,
-        data: response.data.data.data
+        data: response.data.data.data,
       };
     }
     // Jika data langsung berupa array
     return response.data;
   }
-  
+
   return {
     success: false,
-    data: []
+    data: [],
   };
 };

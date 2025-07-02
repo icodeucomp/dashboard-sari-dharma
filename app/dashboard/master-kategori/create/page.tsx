@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import AsyncSelect from "react-select/async";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createMasterKategori } from "@/app/services/masterKategoriService";
@@ -14,7 +15,8 @@ export default function CreateMasterKategori() {
   
   const [name, setName] = useState("");
   const [page, setPage] = useState("");
-  const [flag, setFlag] = useState("");
+  // State untuk react-select flag
+  const [selectedFlag, setSelectedFlag] = useState<{ value: string; label: string } | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -30,12 +32,23 @@ export default function CreateMasterKategori() {
   ];
 
   /**
+   * Fungsi untuk load opsi flag secara async (dummy, karena data statis)
+   * @param {string} inputValue - input pencarian
+   * @returns {Promise<{value: string, label: string}[]>}
+   */
+  const loadFlagOptions = async (inputValue: string) => {
+    return flagOptions.filter(option =>
+      option.label.toLowerCase().includes(inputValue.toLowerCase())
+    );
+  };
+
+  /**
    * Fungsi untuk mereset form ke nilai awal
    */
   const handleResetForm = () => {
     setName("");
     setPage("");
-    setFlag("");
+    setSelectedFlag(null);
     setError("");
   };
 
@@ -48,12 +61,10 @@ export default function CreateMasterKategori() {
       setError("Nama kategori tidak boleh kosong");
       return false;
     }
-    
-    if (!flag) {
+    if (!selectedFlag) {
       setError("Flag kategori harus dipilih");
       return false;
     }
-    
     return true;
   };
 
@@ -63,19 +74,14 @@ export default function CreateMasterKategori() {
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!validateForm()) {
       return;
     }
-
     try {
       setLoading(true);
       setError("");
-
-      const response = await createMasterKategori(name, page, flag);
-      
+      const response = await createMasterKategori(name, page, selectedFlag?.value || "");
       if (response.success) {
-        // Redirect ke halaman master kategori setelah berhasil
         router.push("/dashboard/master-kategori");
       } else {
         setError("Gagal menambahkan data kategori");
@@ -157,7 +163,7 @@ export default function CreateMasterKategori() {
           />
         </div>
 
-        {/* Flag */}
+        {/* Flag dengan react-select */}
         <div className="mb-6 flex items-center">
           <label
             htmlFor="flag"
@@ -165,21 +171,33 @@ export default function CreateMasterKategori() {
           >
             Flag <span className="text-red-500">*</span>
           </label>
-          <select
-            id="flag"
-            value={flag}
-            onChange={(e) => setFlag(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            required
-            disabled={loading}
-          >
-            <option value="">Pilih Flag</option>
-            {flagOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <div className="flex-1">
+            {/*
+              Komponen AsyncSelect digunakan untuk memilih flag secara async
+              Lihat dokumentasi react-select AsyncSelect
+            */}
+            <AsyncSelect
+              cacheOptions
+              defaultOptions={flagOptions}
+              loadOptions={loadFlagOptions}
+              inputId="flag"
+              classNamePrefix="react-select"
+              isSearchable
+              isClearable
+              isDisabled={loading}
+              placeholder="Pilih Flag..."
+              value={selectedFlag}
+              onChange={(option) => setSelectedFlag(option)}
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  minHeight: 42,
+                }),
+                menu: (base) => ({ ...base, zIndex: 20 }),
+              }}
+              required
+            />
+          </div>
         </div>
 
         {/* Tombol Simpan dan Reset */}

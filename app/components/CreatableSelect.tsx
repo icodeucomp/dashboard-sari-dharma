@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
-import CreatableSelect from 'react-select/creatable';
-import { StylesConfig } from 'react-select';
+import React, { useState } from "react";
+import CreatableSelect from "react-select/creatable";
+import { StylesConfig } from "react-select";
 
 /**
  * Interface untuk opsi dalam dropdown
@@ -19,7 +19,9 @@ interface KategoriSelectProps {
   value: string;
   options: OptionType[];
   onChange: (newValue: string) => void;
-  onCreateOption: (inputValue: string) => Promise<{ success: boolean; newOption?: OptionType }>;
+  onCreateOption: (
+    inputValue: string
+  ) => Promise<{ success: boolean; newOption?: OptionType }>;
   placeholder?: string;
   isLoading?: boolean;
   isDisabled?: boolean;
@@ -43,52 +45,56 @@ export const KategoriSelect: React.FC<KategoriSelectProps> = ({
 
   // Styles untuk react-select
   const customStyles: StylesConfig<OptionType, false> = {
-    control: (provided, state) => ({
-      ...provided,
-      borderColor: state.isFocused ? '#f97316' : '#d1d5db',
-      boxShadow: state.isFocused ? '0 0 0 1px #f97316' : 'none',
-      '&:hover': {
-        borderColor: '#f97316',
-      },
-      borderRadius: '0.375rem',
-      padding: '0.25rem',
-      backgroundColor: isDisabled ? '#f3f4f6' : 'white',
+    // control: (provided, state) => ({
+    //   ...provided,
+    //   borderColor: state.isFocused ? '#f97316' : '#d1d5db',
+    //   boxShadow: state.isFocused ? '0 0 0 1px #f97316' : 'none',
+    //   '&:hover': {
+    //     borderColor: '#f97316',
+    //   },
+    //   borderRadius: '0.375rem',
+    //   padding: '0.25rem',
+    //   backgroundColor: isDisabled ? '#f3f4f6' : 'white',
+    // }),
+    // option: (provided, state) => ({
+    //   ...provided,
+    //   backgroundColor: state.isSelected
+    //     ? '#f97316'
+    //     : state.isFocused
+    //       ? '#ffedd5'
+    //       : 'white',
+    //   color: state.isSelected ? 'white' : 'black',
+    //   '&:hover': {
+    //     backgroundColor: state.isSelected ? '#f97316' : '#ffedd5',
+    //   },
+    // }),
+    // singleValue: (provided) => ({
+    //   ...provided,
+    //   color: '#1f2937',
+    // }),
+    // menu: (provided) => ({
+    //   ...provided,
+    //   zIndex: 10,
+    // }),
+    control: (base) => ({
+      ...base,
+      minHeight: 42,
     }),
-    option: (provided, state) => ({
-      ...provided,
-      backgroundColor: state.isSelected 
-        ? '#f97316'
-        : state.isFocused 
-          ? '#ffedd5' 
-          : 'white',
-      color: state.isSelected ? 'white' : 'black',
-      '&:hover': {
-        backgroundColor: state.isSelected ? '#f97316' : '#ffedd5',
-      },
-    }),
-    singleValue: (provided) => ({
-      ...provided,
-      color: '#1f2937',
-    }),
-    menu: (provided) => ({
-      ...provided,
-      zIndex: 10,
-    }),
+    menu: (base) => ({ ...base, zIndex: 20 }),
   };
 
   /**
    * Menemukan opsi yang dipilih berdasarkan value
    */
-  const selectedOption = options.find(option => option.value === value) || null;
+  const selectedOption =
+    options.find((option) => option.value === value) || null;
 
   /**
    * Menangani perubahan pada Select
    * @param newValue - Nilai yang dipilih
    * @param actionMeta - Metadata tindakan
    */
-  const handleChange = (
-    newValue: OptionType | null,
-  ) => {
+  const handleChange = (newValue: OptionType | null) => {
     onChange(newValue?.value || "");
   };
 
@@ -100,7 +106,7 @@ export const KategoriSelect: React.FC<KategoriSelectProps> = ({
     try {
       setIsCreating(true);
       const result = await onCreateOption(inputValue);
-      
+
       if (result.success && result.newOption) {
         onChange(result.newOption.value);
       }
