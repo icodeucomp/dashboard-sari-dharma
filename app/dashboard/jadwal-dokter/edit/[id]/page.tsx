@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Select from "react-select";
+import AsyncSelect from "react-select/async";
 import Image from "next/image";
 import Icon from "@mdi/react";
 import { mdiPlus, mdiDelete, mdiUpload } from "@mdi/js";
@@ -27,8 +29,57 @@ export default function EditJadwalDokter() {
   const { id } = useParams<{ id: string }>();
 
   // State untuk form
-  const [dokterId, setDokterId] = useState<string>("");
-  const [spesialisId, setSpesialisId] = useState<string>("");
+  const [selectedDokter, setSelectedDokter] = useState<{value: string; label: string}>({value: '', label: ''});
+  const [selectedSpesialis, setSelectedSpesialis] = useState<{value: string; label: string}>({value: '', label: ''});
+  // State untuk react-select
+
+  /**
+   * Fungsi untuk load data dokter secara async untuk react-select
+   * @param {string} inputValue - input pencarian
+   * @returns {Promise<{value: string, label: string}[]>}
+   */
+  const loadDokterOptions = async (inputValue: string) => {
+    // Panggil API getDokterList dengan parameter search jika ada
+    try {
+      const res = await getDokterList(inputValue.toLowerCase());
+      if (res.success && Array.isArray(res.data)) {
+        return res.data.map((dokter) => ({
+          value: dokter.id,
+          label: dokter.nama_dokter,
+        }));
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  };
+
+  /**
+   * Fungsi untuk load data spesialis secara async untuk react-select
+   * @param {string} inputValue - input pencarian
+   * @returns {Promise<{value: string, label: string}[]>}
+   */
+  const loadSpesialisOptions = async (inputValue: string) => {
+    try {
+      const res = await getSpesialisList();
+      if (res.success && Array.isArray(res.data)) {
+        return res.data
+          .filter((spesialis) =>
+            spesialis.nama_layanan
+              .toLowerCase()
+              .includes(inputValue.toLowerCase())
+          )
+          .map((spesialis) => ({
+            value: spesialis.id,
+            label: spesialis.nama_layanan,
+          }));
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  };
+
   const [backgroundDokter, setBackgroundDokter] = useState("");
   const [foto, setFoto] = useState<File | null>(null);
   const [currentFoto, setCurrentFoto] = useState("");
@@ -59,8 +110,10 @@ export default function EditJadwalDokter() {
 
       if (response.success) {
         const data = response.data;
-        setDokterId(data.dokter_id);
-        setSpesialisId(data.spesialis_id);
+        setSelectedDokter({value: data.dokter?.id || '', label: data.dokter?.nama_dokter || ''});
+        setSelectedSpesialis({value: data.spesialis?.id || '', label: data.spesialis?.nama_layanan || ''});
+        // Set react-select value
+
         setBackgroundDokter(data.background_dokter || "");
         setCurrentFoto(data.foto || "");
 
@@ -104,6 +157,8 @@ export default function EditJadwalDokter() {
         // Pastikan data yang diterima adalah array
         if (Array.isArray(dokterResponse.data)) {
           setDokterList(dokterResponse.data);
+          // Set react-select value jika sudah ada id
+          
         } else {
           console.error("Data dokter bukan array:", dokterResponse.data);
           setDokterList([]);
@@ -116,6 +171,7 @@ export default function EditJadwalDokter() {
         // Pastikan data yang diterima adalah array
         if (Array.isArray(spesialisResponse.data)) {
           setSpesialisList(spesialisResponse.data);
+          
         } else {
           console.error("Data spesialis bukan array:", spesialisResponse.data);
           setSpesialisList([]);
@@ -239,12 +295,12 @@ export default function EditJadwalDokter() {
    */
   const validateForm = () => {
     // Validasi dasar
-    if (!dokterId) {
+    if (!selectedDokter) {
       setError("Dokter harus dipilih");
       return false;
     }
 
-    if (!spesialisId) {
+    if (!selectedSpesialis) {
       setError("Spesialis harus dipilih");
       return false;
     }
@@ -285,8 +341,8 @@ export default function EditJadwalDokter() {
 
       // Mempersiapkan FormData untuk unggah file
       const formData = new FormData();
-      formData.append("dokter_id", dokterId);
-      formData.append("spesialis_id", spesialisId);
+      formData.append("dokter_id", selectedDokter.value);
+      formData.append("spesialis_id", selectedSpesialis.value);
 
       if (backgroundDokter) {
         formData.append("background_dokter", backgroundDokter);
@@ -410,6 +466,7 @@ export default function EditJadwalDokter() {
         </div>
 
         {/* Pilih Dokter */}
+        {/* Pilih Dokter dengan react-select */}
         <div className="mb-6 flex items-center">
           <label
             htmlFor="dokter"
@@ -417,28 +474,35 @@ export default function EditJadwalDokter() {
           >
             Dokter <span className="text-red-500">*</span>
           </label>
-          <select
-            id="dokter"
-            value={dokterId}
-            onChange={(e) => setDokterId(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            required
-            disabled={loading || loadingDropdown}
-          >
-            <option value="">Pilih Dokter</option>
-            {Array.isArray(dokterList) ? (
-              dokterList.map((dokter) => (
-                <option key={dokter.id} value={dokter.id}>
-                  {dokter.nama_dokter}
-                </option>
-              ))
-            ) : (
-              <option value="">Data dokter tidak tersedia</option>
-            )}
-          </select>
+          <div className="flex-1">
+            <AsyncSelect
+              cacheOptions
+              defaultOptions={dokterList.map((dokter) => ({ value: dokter.id, label: dokter.nama_dokter }))}
+              loadOptions={loadDokterOptions}
+              inputId="dokter"
+              classNamePrefix="react-select"
+              isSearchable
+              isClearable
+              isDisabled={loading || loadingDropdown}
+              placeholder="Pilih Dokter..."
+              defaultValue={selectedDokter}
+              onChange={(option) => {
+                setSelectedDokter(option ? {value: option.value, label: option.label} : {value: '', label: ''});
+              }}
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  minHeight: 42,
+                }),
+                menu: (base) => ({ ...base, zIndex: 20 }),
+              }}
+              required
+            />
+          </div>
         </div>
 
         {/* Pilih Spesialis */}
+        {/* Pilih Spesialis dengan react-select */}
         <div className="mb-6 flex items-center">
           <label
             htmlFor="spesialis"
@@ -446,25 +510,31 @@ export default function EditJadwalDokter() {
           >
             Spesialis <span className="text-red-500">*</span>
           </label>
-          <select
-            id="spesialis"
-            value={spesialisId}
-            onChange={(e) => setSpesialisId(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            required
-            disabled={loading || loadingDropdown}
-          >
-            <option value="">Pilih Spesialis</option>
-            {Array.isArray(spesialisList) ? (
-              spesialisList.map((spesialis) => (
-                <option key={spesialis.id} value={spesialis.id}>
-                  {spesialis.nama_layanan}
-                </option>
-              ))
-            ) : (
-              <option value="">Data spesialis tidak tersedia</option>
-            )}
-          </select>
+          <div className="flex-1">
+            <AsyncSelect
+              cacheOptions
+              defaultOptions={spesialisList.map((spesialis) => ({ value: spesialis.id, label: spesialis.nama_layanan }))}
+              loadOptions={loadSpesialisOptions}
+              inputId="spesialis"
+              classNamePrefix="react-select"
+              isSearchable
+              isClearable
+              isDisabled={loading || loadingDropdown}
+              placeholder="Pilih Spesialis..."
+              defaultValue={selectedSpesialis}
+              onChange={(option) => {
+                setSelectedSpesialis(option ? {value: option.value, label: option.label} : {value: '', label: ''});
+              }}
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  minHeight: 42,
+                }),
+                menu: (base) => ({ ...base, zIndex: 20 }),
+              }}
+              required
+            />
+          </div>
         </div>
 
         {/* Background Dokter */}
@@ -578,9 +648,7 @@ export default function EditJadwalDokter() {
           {edukasiKarir.map((item, index) => (
             <div key={index} className="flex items-center gap-4 mb-4">
               <div className="flex flex-col w-1/2">
-                <label className="text-xs text-gray-500 mb-1">
-                  Pendidikan
-                </label>
+                <label className="text-xs text-gray-500 mb-1">Pendidikan</label>
                 <input
                   type="text"
                   value={item.judul}
