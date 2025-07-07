@@ -164,10 +164,12 @@ export default function Sidebar({ isOpen, toggleSidebar }: {
   return (
     <aside 
       className={`
-        fixed left-0 top-0 z-40 min-h-screen transition-all duration-300
+        fixed left-0 top-0 z-40 h-screen transition-all duration-300
         ${isOpen ? 'w-64' : 'w-20'} 
-        bg-[#C75000] dark:bg-gray-800 text-white overflow-y-auto
+        bg-[#C75000] dark:bg-gray-800 text-white
+        flex flex-col
       `}
+      style={{ maxHeight: '100vh' }}
     >
       {/* Header dengan Logo */}
       <div className={`flex items-center justify-between h-16 px-4`}>
@@ -194,7 +196,7 @@ export default function Sidebar({ isOpen, toggleSidebar }: {
       </div>
 
       {/* Menu Navigasi */}
-      <nav className="p-4">
+      <nav className="p-4 flex-1 overflow-y-auto">
         {navItems.map((item, index) => (
           <NavItem
             key={index}
