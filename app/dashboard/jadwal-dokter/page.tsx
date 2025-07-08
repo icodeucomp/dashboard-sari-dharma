@@ -12,8 +12,14 @@ import {
   deleteJadwalDokter,
   JadwalDokterItem,
 } from "@/app/services/jadwalDokterService";
-import { getMasterDokter, DokterItem } from "@/app/services/masterDokterService";
-import { getLayananSpesialis, LayananSpesialisItem } from "@/app/services/layananSpesialisService";
+import {
+  getMasterDokter,
+  DokterItem,
+} from "@/app/services/masterDokterService";
+import {
+  getLayananSpesialis,
+  LayananSpesialisItem,
+} from "@/app/services/layananSpesialisService";
 
 /**
  * Interface untuk opsi dropdown
@@ -63,7 +69,7 @@ export default function JadwalDokter() {
     try {
       setLoadingDokter(true);
       const response = await getMasterDokter({ per_page: 100 });
-      
+
       if (response.success && response.data && response.data.data) {
         setDokterOptions(
           response.data.data.map((item: DokterItem) => ({
@@ -86,7 +92,7 @@ export default function JadwalDokter() {
     try {
       setLoadingSpesialis(true);
       const response = await getLayananSpesialis({ per_page: 100 });
-      
+
       if (response.success && response.data && response.data.data) {
         setSpesialisOptions(
           response.data.data.map((item: LayananSpesialisItem) => ({
@@ -122,13 +128,13 @@ export default function JadwalDokter() {
       setFilterSpesialisId("");
       setSearchQuery("");
       setCurrentPage(1);
-      
+
       // Panggil API tanpa parameter filter
       const params = {
         page: 1,
-        per_page: itemsPerPage
+        per_page: itemsPerPage,
       };
-      
+
       const response = await getJadwalDokter(params);
 
       if (response.success) {
@@ -223,7 +229,9 @@ export default function JadwalDokter() {
    * @param {string} id - ID jadwal dokter yang akan dihapus
    */
   const handleDelete = async (id: string) => {
-    if (window.confirm("Apakah Anda yakin ingin menghapus jadwal dokter ini?")) {
+    if (
+      window.confirm("Apakah Anda yakin ingin menghapus jadwal dokter ini?")
+    ) {
       try {
         setIsDeleting(true);
         const response = await deleteJadwalDokter(id);
@@ -270,7 +278,10 @@ export default function JadwalDokter() {
             Jadwal Dokter
           </h1>
           {/* Search Box */}
-          <form onSubmit={handleSearch} className="flex items-center flex-1 max-w-md">
+          <form
+            onSubmit={handleSearch}
+            className="flex items-center flex-1 max-w-md"
+          >
             <input
               type="text"
               value={searchQuery}
@@ -390,21 +401,30 @@ export default function JadwalDokter() {
           {jadwalDokter.map((dokter) => (
             <div
               key={dokter.id}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden"
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-full"
             >
               {/* Gambar dokter */}
               <div className="h-48 overflow-hidden">
-                <Image
-                  src={`${BASE_URL}/storage/${dokter.foto}`}
-                  alt={dokter.dokter?.nama_dokter || "Dokter"}
-                  width={300}
-                  height={200}
-                  className="w-full h-48 object-cover"
-                />
+                {/* Tampilkan foto dokter dengan object-scale-down */}
+                {dokter.foto ? (
+                  <Image
+                    src={`${BASE_URL}/storage/${dokter.foto}`}
+                    alt={dokter.dokter?.nama_dokter || "Dokter"}
+                    width={300}
+                    height={200}
+                    className="w-full h-48 object-scale-down bg-white"
+                  />
+                ) : (
+                  <div className="w-full h-48 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                    <p className="text-gray-500 dark:text-gray-400">
+                      Foto Tidak Tersedia
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Konten dokter */}
-              <div className="p-4">
+              <div className="p-4 flex-1 flex flex-col">
                 <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
                   {dokter.dokter?.nama_dokter || "Nama Dokter Tidak Tersedia"}
                 </h2>
@@ -414,21 +434,20 @@ export default function JadwalDokter() {
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                   {dokter.background_dokter}
                 </p>
-                <div className="flex justify-between">
-                  {/* Tombol Edit */}
+                <div className="flex-1"></div>
+                {/* Footer card: Tombol Edit & Hapus rata bawah */}
+                <div className="flex gap-3 mt-4">
                   <Link
                     href={`/dashboard/jadwal-dokter/edit/${dokter.id}`}
-                    className="flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 text-sm font-medium py-2 px-4 rounded-md"
+                    className="flex-1 flex items-center justify-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 text-sm font-medium py-2 px-4 rounded-md"
                   >
                     Edit
                     <Icon path={mdiPencil} size={0.8} className="ml-2" />
                   </Link>
-
-                  {/* Tombol Hapus */}
                   <button
                     onClick={() => handleDelete(dokter.id)}
                     disabled={isDeleting}
-                    className="flex cursor-pointer items-center border border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700 text-sm font-medium py-2 px-4 rounded-md"
+                    className="flex-1 flex items-center justify-center border border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700 text-sm font-medium py-2 px-4 rounded-md"
                   >
                     Hapus
                     <Icon path={mdiTrashCan} size={0.8} className="ml-2" />
