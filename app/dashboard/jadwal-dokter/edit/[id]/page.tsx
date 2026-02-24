@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Select from "react-select";
 import AsyncSelect from "react-select/async";
 import Image from "next/image";
 import Icon from "@mdi/react";
@@ -9,16 +8,7 @@ import { mdiPlus, mdiDelete, mdiUpload } from "@mdi/js";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import "moment/locale/id";
-import {
-  getJadwalDokterById,
-  updateJadwalDokter,
-  getDokterList,
-  getSpesialisList,
-  Dokter,
-  Spesialis,
-  JadwalItem,
-  EdukasiKarirItem,
-} from "@/app/services/jadwalDokterService";
+import { getJadwalDokterById, updateJadwalDokter, getDokterList, getSpesialisList, Dokter, Spesialis, JadwalItem, EdukasiKarirItem } from "@/app/services/jadwalDokterService";
 
 /**
  * Halaman untuk mengedit jadwal dokter
@@ -29,8 +19,8 @@ export default function EditJadwalDokter() {
   const { id } = useParams<{ id: string }>();
 
   // State untuk form
-  const [selectedDokter, setSelectedDokter] = useState<{value: string; label: string}>({value: '', label: ''});
-  const [selectedSpesialis, setSelectedSpesialis] = useState<{value: string; label: string}>({value: '', label: ''});
+  const [selectedDokter, setSelectedDokter] = useState<{ value: string; label: string }>({ value: "", label: "" });
+  const [selectedSpesialis, setSelectedSpesialis] = useState<{ value: string; label: string }>({ value: "", label: "" });
   // State untuk react-select
 
   /**
@@ -64,11 +54,7 @@ export default function EditJadwalDokter() {
       const res = await getSpesialisList();
       if (res.success && Array.isArray(res.data)) {
         return res.data
-          .filter((spesialis) =>
-            spesialis.nama_layanan
-              .toLowerCase()
-              .includes(inputValue.toLowerCase())
-          )
+          .filter((spesialis) => spesialis.nama_layanan.toLowerCase().includes(inputValue.toLowerCase()))
           .map((spesialis) => ({
             value: spesialis.id,
             label: spesialis.nama_layanan,
@@ -83,12 +69,8 @@ export default function EditJadwalDokter() {
   const [backgroundDokter, setBackgroundDokter] = useState("");
   const [foto, setFoto] = useState<File | null>(null);
   const [currentFoto, setCurrentFoto] = useState("");
-  const [jadwal, setJadwal] = useState<JadwalItem[]>([
-    { hari: "", jam_mulai: "", jam_selesai: "" },
-  ]);
-  const [edukasiKarir, setEdukasiKarir] = useState<EdukasiKarirItem[]>([
-    { judul: "", tahun_mulai: "", tahun_selesai: "" },
-  ]);
+  const [jadwal, setJadwal] = useState<JadwalItem[]>([{ hari: "", jam_mulai: "", jam_selesai: "" }]);
+  const [edukasiKarir, setEdukasiKarir] = useState<EdukasiKarirItem[]>([{ judul: "", tahun_mulai: "", tahun_selesai: "" }]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -110,8 +92,8 @@ export default function EditJadwalDokter() {
 
       if (response.success) {
         const data = response.data;
-        setSelectedDokter({value: data.dokter?.id || '', label: data.dokter?.nama_dokter || ''});
-        setSelectedSpesialis({value: data.spesialis?.id || '', label: data.spesialis?.nama_layanan || ''});
+        setSelectedDokter({ value: data.dokter?.id || "", label: data.dokter?.nama_dokter || "" });
+        setSelectedSpesialis({ value: data.spesialis?.id || "", label: data.spesialis?.nama_layanan || "" });
         // Set react-select value
 
         setBackgroundDokter(data.background_dokter || "");
@@ -148,17 +130,13 @@ export default function EditJadwalDokter() {
     try {
       setLoadingDropdown(true);
 
-      const [dokterResponse, spesialisResponse] = await Promise.all([
-        getDokterList(),
-        getSpesialisList(),
-      ]);
+      const [dokterResponse, spesialisResponse] = await Promise.all([getDokterList(), getSpesialisList()]);
 
       if (dokterResponse.success) {
         // Pastikan data yang diterima adalah array
         if (Array.isArray(dokterResponse.data)) {
           setDokterList(dokterResponse.data);
           // Set react-select value jika sudah ada id
-          
         } else {
           console.error("Data dokter bukan array:", dokterResponse.data);
           setDokterList([]);
@@ -171,7 +149,6 @@ export default function EditJadwalDokter() {
         // Pastikan data yang diterima adalah array
         if (Array.isArray(spesialisResponse.data)) {
           setSpesialisList(spesialisResponse.data);
-          
         } else {
           console.error("Data spesialis bukan array:", spesialisResponse.data);
           setSpesialisList([]);
@@ -222,11 +199,7 @@ export default function EditJadwalDokter() {
    * @param {"hari" | "jam_mulai" | "jam_selesai"} field - Field yang diubah
    * @param {string} value - Nilai baru
    */
-  const handleChangeJadwal = (
-    index: number,
-    field: "hari" | "jam_mulai" | "jam_selesai",
-    value: string
-  ) => {
+  const handleChangeJadwal = (index: number, field: "hari" | "jam_mulai" | "jam_selesai", value: string) => {
     const updatedJadwal = [...jadwal];
     updatedJadwal[index][field] = value;
     setJadwal(updatedJadwal);
@@ -236,10 +209,7 @@ export default function EditJadwalDokter() {
    * Fungsi untuk menambahkan edukasi/karir baru
    */
   const handleAddEdukasiKarir = () => {
-    setEdukasiKarir([
-      ...edukasiKarir,
-      { judul: "", tahun_mulai: "", tahun_selesai: "" },
-    ]);
+    setEdukasiKarir([...edukasiKarir, { judul: "", tahun_mulai: "", tahun_selesai: "" }]);
   };
 
   /**
@@ -260,11 +230,7 @@ export default function EditJadwalDokter() {
    * @param {"judul" | "tahun_mulai" | "tahun_selesai"} field - Field yang diubah
    * @param {string} value - Nilai baru
    */
-  const handleChangeEdukasiKarir = (
-    index: number,
-    field: "judul" | "tahun_mulai" | "tahun_selesai",
-    value: string
-  ) => {
+  const handleChangeEdukasiKarir = (index: number, field: "judul" | "tahun_mulai" | "tahun_selesai", value: string) => {
     const updatedEdukasiKarir = [...edukasiKarir];
     updatedEdukasiKarir[index][field] = value;
     setEdukasiKarir(updatedEdukasiKarir);
@@ -365,10 +331,7 @@ export default function EditJadwalDokter() {
       }
     } catch (error: any) {
       console.error("Error updating jadwal dokter:", error);
-      setError(
-        error.response?.data?.message ||
-          "Terjadi kesalahan saat mengupdate jadwal dokter"
-      );
+      setError(error.response?.data?.message || "Terjadi kesalahan saat mengupdate jadwal dokter");
     } finally {
       setLoading(false);
     }
@@ -388,58 +351,34 @@ export default function EditJadwalDokter() {
     <div className="p-6">
       {/* Header halaman */}
       <div className="flex justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Edit Jadwal Dokter
-        </h1>
-        <Link
-          href="/dashboard/jadwal-dokter"
-          className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md"
-        >
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Edit Jadwal Dokter</h1>
+        <Link href="/dashboard/jadwal-dokter" className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md">
           Kembali
         </Link>
       </div>
 
       {/* Form edit jadwal dokter */}
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 border border-gray-200 dark:border-gray-700"
-      >
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 border border-gray-200 dark:border-gray-700">
         {/* Error Message */}
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
+        {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
 
         {/* Foto Saat Ini dan Upload Foto Baru */}
         <div className="mb-6">
           <div className="flex items-center mb-4">
-            <label className="block text-gray-700 dark:text-gray-300 font-medium w-1/4">
-              Foto Saat Ini
-            </label>
+            <label className="block text-gray-700 dark:text-gray-300 font-medium w-1/4">Foto Saat Ini</label>
             <div className="flex-1">
               {currentFoto ? (
                 <div className="relative h-48 w-full max-w-xs">
-                  <Image
-                    src={`${BASE_URL}/storage/${currentFoto}`}
-                    alt="Foto Dokter"
-                    width={200}
-                    height={200}
-                    className="h-48 object-cover border"
-                  />
+                  <Image src={`${BASE_URL}/storage/${currentFoto}`} alt="Foto Dokter" width={200} height={200} className="h-48 object-cover border" />
                 </div>
               ) : (
-                <p className="text-gray-500 dark:text-gray-400">
-                  Tidak ada foto
-                </p>
+                <p className="text-gray-500 dark:text-gray-400">Tidak ada foto</p>
               )}
             </div>
           </div>
 
           <div className="flex items-center">
-            <label className="block text-gray-700 dark:text-gray-300 font-medium w-1/4">
-              Upload Foto Baru
-            </label>
+            <label className="block text-gray-700 dark:text-gray-300 font-medium w-1/4">Upload Foto Baru</label>
             <div className="flex items-center flex-1">
               <label
                 htmlFor="foto"
@@ -450,17 +389,8 @@ export default function EditJadwalDokter() {
                 <Icon path={mdiUpload} size={1} className="mr-2" />
                 Browse
               </label>
-              <input
-                id="foto"
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-                disabled={loading}
-              />
-              <span className="ml-4 text-sm text-gray-500 dark:text-gray-400">
-                {foto ? foto.name : "max. 2mb"}
-              </span>
+              <input id="foto" type="file" accept="image/*" onChange={handleFileChange} className="hidden" disabled={loading} />
+              <span className="ml-4 text-sm text-gray-500 dark:text-gray-400">{foto ? foto.name : "max. 2mb"}</span>
             </div>
           </div>
         </div>
@@ -468,10 +398,7 @@ export default function EditJadwalDokter() {
         {/* Pilih Dokter */}
         {/* Pilih Dokter dengan react-select */}
         <div className="mb-6 flex items-center">
-          <label
-            htmlFor="dokter"
-            className="block text-gray-700 dark:text-gray-300 font-medium w-1/4"
-          >
+          <label htmlFor="dokter" className="block text-gray-700 dark:text-gray-300 font-medium w-1/4">
             Dokter <span className="text-red-500">*</span>
           </label>
           <div className="flex-1">
@@ -487,7 +414,7 @@ export default function EditJadwalDokter() {
               placeholder="Pilih Dokter..."
               defaultValue={selectedDokter}
               onChange={(option) => {
-                setSelectedDokter(option ? {value: option.value, label: option.label} : {value: '', label: ''});
+                setSelectedDokter(option ? { value: option.value, label: option.label } : { value: "", label: "" });
               }}
               styles={{
                 control: (base) => ({
@@ -504,10 +431,7 @@ export default function EditJadwalDokter() {
         {/* Pilih Spesialis */}
         {/* Pilih Spesialis dengan react-select */}
         <div className="mb-6 flex items-center">
-          <label
-            htmlFor="spesialis"
-            className="block text-gray-700 dark:text-gray-300 font-medium w-1/4"
-          >
+          <label htmlFor="spesialis" className="block text-gray-700 dark:text-gray-300 font-medium w-1/4">
             Spesialis <span className="text-red-500">*</span>
           </label>
           <div className="flex-1">
@@ -523,7 +447,7 @@ export default function EditJadwalDokter() {
               placeholder="Pilih Spesialis..."
               defaultValue={selectedSpesialis}
               onChange={(option) => {
-                setSelectedSpesialis(option ? {value: option.value, label: option.label} : {value: '', label: ''});
+                setSelectedSpesialis(option ? { value: option.value, label: option.label } : { value: "", label: "" });
               }}
               styles={{
                 control: (base) => ({
@@ -539,10 +463,7 @@ export default function EditJadwalDokter() {
 
         {/* Background Dokter */}
         <div className="mb-6 flex">
-          <label
-            htmlFor="backgroundDokter"
-            className="block text-gray-700 dark:text-gray-300 font-medium w-1/4 pt-2"
-          >
+          <label htmlFor="backgroundDokter" className="block text-gray-700 dark:text-gray-300 font-medium w-1/4 pt-2">
             Background Dokter
           </label>
           <textarea
@@ -558,9 +479,7 @@ export default function EditJadwalDokter() {
 
         {/* Jadwal Dokter */}
         <div className="mb-6">
-          <label className="block text-xl font-bold text-orange-600 dark:text-orange-400 mb-4">
-            Jadwal Dokter
-          </label>
+          <label className="block text-xl font-bold text-orange-600 dark:text-orange-400 mb-4">Jadwal Dokter</label>
 
           {jadwal.map((item, index) => (
             <div key={index} className="flex items-center gap-4 mb-4">
@@ -568,9 +487,7 @@ export default function EditJadwalDokter() {
                 <label className="text-xs text-gray-500 mb-1">Hari</label>
                 <select
                   value={item.hari}
-                  onChange={(e) =>
-                    handleChangeJadwal(index, "hari", e.target.value)
-                  }
+                  onChange={(e) => handleChangeJadwal(index, "hari", e.target.value)}
                   className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   disabled={loading}
                 >
@@ -590,24 +507,18 @@ export default function EditJadwalDokter() {
                 <input
                   type="time"
                   value={item.jam_mulai}
-                  onChange={(e) =>
-                    handleChangeJadwal(index, "jam_mulai", e.target.value)
-                  }
+                  onChange={(e) => handleChangeJadwal(index, "jam_mulai", e.target.value)}
                   className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   disabled={loading}
                 />
               </div>
 
               <div className="flex flex-col w-1/4">
-                <label className="text-xs text-gray-500 mb-1">
-                  Jam Selesai
-                </label>
+                <label className="text-xs text-gray-500 mb-1">Jam Selesai</label>
                 <input
                   type="time"
                   value={item.jam_selesai}
-                  onChange={(e) =>
-                    handleChangeJadwal(index, "jam_selesai", e.target.value)
-                  }
+                  onChange={(e) => handleChangeJadwal(index, "jam_selesai", e.target.value)}
                   className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   disabled={loading}
                 />
@@ -617,9 +528,7 @@ export default function EditJadwalDokter() {
                 type="button"
                 onClick={() => handleDeleteJadwal(index)}
                 disabled={loading}
-                className={`flex items-center border border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700 py-2 px-4 rounded-md mt-5 ${
-                  loading ? "opacity-50 cursor-not-allowed" : ""
-                }`}
+                className={`flex items-center border border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700 py-2 px-4 rounded-md mt-5 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 <Icon path={mdiDelete} size={0.8} />
               </button>
@@ -630,9 +539,7 @@ export default function EditJadwalDokter() {
             type="button"
             onClick={handleAddJadwal}
             disabled={loading}
-            className={`flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 py-2 px-4 rounded-md ${
-              loading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className={`flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 py-2 px-4 rounded-md ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <Icon path={mdiPlus} size={0.8} className="mr-2" />
             Tambah Hari
@@ -641,9 +548,7 @@ export default function EditJadwalDokter() {
 
         {/* Section Edukasi / Karir */}
         <div className="mb-6">
-          <label className="block text-xl font-bold text-orange-600 dark:text-orange-400 mb-4">
-            Edukasi / Karir
-          </label>
+          <label className="block text-xl font-bold text-orange-600 dark:text-orange-400 mb-4">Edukasi / Karir</label>
 
           {edukasiKarir.map((item, index) => (
             <div key={index} className="flex items-center gap-4 mb-4">
@@ -652,28 +557,18 @@ export default function EditJadwalDokter() {
                 <input
                   type="text"
                   value={item.judul}
-                  onChange={(e) =>
-                    handleChangeEdukasiKarir(index, "judul", e.target.value)
-                  }
+                  onChange={(e) => handleChangeEdukasiKarir(index, "judul", e.target.value)}
                   className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   placeholder="Judul Edukasi / Karir"
                   disabled={loading}
                 />
               </div>
               <div className="flex flex-col w-1/5">
-                <label className="text-xs text-gray-500 mb-1">
-                  Tahun Mulai
-                </label>
+                <label className="text-xs text-gray-500 mb-1">Tahun Mulai</label>
                 <input
                   type="number"
                   value={item.tahun_mulai}
-                  onChange={(e) =>
-                    handleChangeEdukasiKarir(
-                      index,
-                      "tahun_mulai",
-                      e.target.value
-                    )
-                  }
+                  onChange={(e) => handleChangeEdukasiKarir(index, "tahun_mulai", e.target.value)}
                   className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   placeholder="Tahun Mulai"
                   disabled={loading}
@@ -681,19 +576,11 @@ export default function EditJadwalDokter() {
               </div>
 
               <div className="flex flex-col w-1/5">
-                <label className="text-xs text-gray-500 mb-1">
-                  Tahun Selesai
-                </label>
+                <label className="text-xs text-gray-500 mb-1">Tahun Selesai</label>
                 <input
                   type="number"
                   value={item.tahun_selesai ?? ""}
-                  onChange={(e) =>
-                    handleChangeEdukasiKarir(
-                      index,
-                      "tahun_selesai",
-                      e.target.value
-                    )
-                  }
+                  onChange={(e) => handleChangeEdukasiKarir(index, "tahun_selesai", e.target.value)}
                   className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   placeholder="Tahun Selesai"
                   disabled={loading}
@@ -704,9 +591,7 @@ export default function EditJadwalDokter() {
                 type="button"
                 onClick={() => handleDeleteEdukasiKarir(index)}
                 disabled={loading}
-                className={`flex items-center border border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700 py-2 px-4 rounded-md mt-5 ${
-                  loading ? "opacity-50 cursor-not-allowed" : ""
-                }`}
+                className={`flex items-center border border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700 py-2 px-4 rounded-md mt-5 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 <Icon path={mdiDelete} size={0.8} />
               </button>
@@ -717,9 +602,7 @@ export default function EditJadwalDokter() {
             type="button"
             onClick={handleAddEdukasiKarir}
             disabled={loading}
-            className={`flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 py-2 px-4 rounded-md ${
-              loading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className={`flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 py-2 px-4 rounded-md ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <Icon path={mdiPlus} size={0.8} className="mr-2" />
             Tambah Baru
@@ -733,9 +616,7 @@ export default function EditJadwalDokter() {
             onClick={handleResetForm}
             disabled={loading}
             className={`font-medium py-2 px-6 rounded-md ${
-              loading
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700"
+              loading ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700"
             }`}
           >
             Reset
@@ -743,11 +624,7 @@ export default function EditJadwalDokter() {
           <button
             type="submit"
             disabled={loading}
-            className={`font-medium py-2 px-6 rounded-md ${
-              loading
-                ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                : "bg-orange-600 hover:bg-orange-700 text-white"
-            }`}
+            className={`font-medium py-2 px-6 rounded-md ${loading ? "bg-gray-400 text-gray-200 cursor-not-allowed" : "bg-orange-600 hover:bg-orange-700 text-white"}`}
           >
             {loading ? "Saving..." : "Update"}
           </button>
