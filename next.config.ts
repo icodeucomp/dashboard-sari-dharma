@@ -5,16 +5,24 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'aksd.aacassandra.web.id',
-        port: '',
-        pathname: '/**',
+        protocol: "http",
+        hostname: "185.196.21.56",
+        port: "8080",
+        pathname: "/**",
       },
       {
-        protocol: 'http',
-        hostname: '127.0.0.1',
-        port: '8000',
-        pathname: '/**',
+        protocol: "https",
+        hostname: "saridharma.com",
+      },
+      {
+        protocol: "https",
+        hostname: "api.saridharma.com",
+      },
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
+        port: "8000",
+        pathname: "/**",
       },
     ],
   },
