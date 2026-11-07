@@ -1,20 +1,13 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import Link from "next/link";
 import Icon from "@mdi/react";
-import { 
-  mdiMenu, 
-  mdiAccountCircleOutline, 
-  mdiChevronDown, 
-  mdiLogout, 
-  mdiCogOutline,
-  mdiMagnify
+import {
+  mdiMenu,
+  mdiChevronDown,
+  mdiLogout,
 } from "@mdi/js";
 import { useRouter } from "next/navigation";
 
-/**
- * Interface untuk data user
- */
 interface UserData {
   id: string;
   name: string;
@@ -24,49 +17,26 @@ interface UserData {
   updated_at: string;
 }
 
-/**
- * Komponen Header untuk dashboard
- * @param {Function} toggleSidebar - Fungsi untuk toggle sidebar
- * @param {boolean} isSidebarOpen - Status sidebar terbuka/tertutup
- * @returns {JSX.Element}
- */
 export default function Header({ toggleSidebar, isSidebarOpen }: {
   toggleSidebar: () => void;
   isSidebarOpen: boolean;
 }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const [userData] = useState<UserData | null>(() => {
+    try {
+      const stored = localStorage.getItem('user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const languageDropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // Mengambil data user dari localStorage saat komponen dimount
-  useEffect(() => {
-    const getUserData = () => {
-      try {
-        const userDataString = localStorage.getItem('user');
-        if (userDataString) {
-          const parsedUserData = JSON.parse(userDataString);
-          setUserData(parsedUserData);
-        }
-      } catch (error) {
-        console.error('Gagal mengambil data user:', error);
-      }
-    };
-
-    getUserData();
-  }, []);
-
-  // Fungsi untuk menangani klik di luar dropdown
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setDropdownOpen(false);
-      }
-      if (languageDropdownRef.current && !languageDropdownRef.current.contains(event.target as Node)) {
-        setLanguageDropdownOpen(false);
       }
     }
 
@@ -76,16 +46,8 @@ export default function Header({ toggleSidebar, isSidebarOpen }: {
     };
   }, []);
 
-  // Fungsi untuk menangani pencarian
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Search query:", searchQuery);
-    // Implementasi pencarian di sini
-  };
-
   return (
-    <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between pr-4 pl-[100px] md:pl-4">
-      {/* Bagian kiri - Toggle menu dan kotak pencarian */}
+    <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between px-4">
       <div className="flex items-center flex-1">
         <button
           onClick={toggleSidebar}
@@ -94,54 +56,9 @@ export default function Header({ toggleSidebar, isSidebarOpen }: {
         >
           <Icon path={mdiMenu} size={1} />
         </button>
-        <form onSubmit={handleSearch} className="hidden items-center flex-1 max-w-md"> 
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search"
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-          />
-          <button
-            type="submit"
-            className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-r-md"
-          >
-            <Icon path={mdiMagnify} size={1} />
-          </button>
-        </form>
       </div>
 
-      {/* Bagian kanan - Pemilih bahasa dan profil pengguna */}
       <div className="flex items-center space-x-3">
-        {/* Pemilih bahasa */}
-        <div className="relative hidden" ref={languageDropdownRef}>
-          <button
-            onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
-            className="flex items-center space-x-2 p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700"
-          >
-            <span>ID</span>
-            <Icon path={mdiChevronDown} size={0.7} />
-          </button>
-
-          {languageDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-32 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
-              <button
-                onClick={() => console.log("Language switched to ID")}
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-              >
-                ID
-              </button>
-              <button
-                onClick={() => console.log("Language switched to EN")}
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-              >
-                EN
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Dropdown profil */}
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -161,19 +78,8 @@ export default function Header({ toggleSidebar, isSidebarOpen }: {
 
           {dropdownOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
-              <Link href="/dashboard/profile" className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 flex items-center">
-                <Icon path={mdiAccountCircleOutline} size={0.8} className="mr-2" />
-                Profil Saya
-              </Link>
-              <Link href="/dashboard/pengaturan" className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 flex items-center">
-                <Icon path={mdiCogOutline} size={0.8} className="mr-2" />
-                Pengaturan
-              </Link>
-              <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
-              <button 
+              <button
                 onClick={() => {
-                  // Logout langsung melalui dropdown
-                  // Hapus token dan redirect ke login
                   document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; max-age=0; samesite=lax;';
                   localStorage.removeItem('auth_token');
                   localStorage.removeItem('user');

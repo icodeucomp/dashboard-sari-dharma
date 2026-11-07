@@ -2,25 +2,21 @@
 
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import Icon from "@mdi/react";
 import * as MDIIcons from "@mdi/js";
 
-/**
- * Fungsi untuk mendapatkan path ikon berdasarkan nama ikon secara dinamis
- * @param {string} iconName - Nama ikon, contoh: 'mdiLungs'
- * @returns {string} Path ikon atau undefined jika tidak ditemukan
- */
+interface IconItem {
+  name: string;
+  path: string;
+}
+
+const LIMIT = 50;
+
 const getIconPath = (iconName: string) => {
-  return (MDIIcons as {[key: string]: string})[iconName];
+  return (MDIIcons as { [key: string]: string })[iconName];
 };
 
-/**
- * Komponen untuk memilih ikon dari daftar yang tersedia
- * @param {Object} props - Properti komponen
- * @param {string} props.selectedIcon - Ikon yang dipilih (name dari ikon)
- * @param {Function} props.onSelect - Fungsi untuk menangani pemilihan ikon
- * @returns {JSX.Element}
- */
 export default function IconPicker({
   selectedIcon,
   onSelect,
@@ -29,126 +25,62 @@ export default function IconPicker({
   onSelect: (icon: string) => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [icons, setIcons] = useState<{ name: string; path: string }[]>([]);
   const [query, setQuery] = useState("");
-  const [offset, setOffset] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [selectedIconPath, setSelectedIconPath] = useState<string>(""); // Tambahkan state untuk menyimpan path ikon
+  const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const LIMIT = 50;
-
-  /**
-   * Fungsi untuk memuat ikon dari API
-   * @param {boolean} reset - Apakah data harus di-reset
-   */
-  const loadIcons = async (reset = false) => {
-    if (loading) return;
-    setLoading(true);
-
-    try {
-      const response = await axios.get("/api/icons", {
-        params: { query, limit: LIMIT, offset: reset ? 0 : offset },
+  const { data, fetchNextPage, hasNextPage, isFetching } = useInfiniteQuery({
+    queryKey: ["icons", searchTerm],
+    queryFn: async ({ pageParam }) => {
+      const response = await axios.get<IconItem[]>("/api/icons", {
+        params: { query: searchTerm, limit: LIMIT, offset: pageParam },
       });
-      setIcons(reset ? response.data : [...icons, ...response.data]);
-      setOffset(reset ? LIMIT : offset + LIMIT);
-      
-      // Temukan path untuk selectedIcon jika belum ditetapkan
-      if (selectedIcon && !selectedIconPath) {
-        const icon = response.data.find((i: { name: string; path: string }) => i.name === selectedIcon);
-        if (icon) {
-          setSelectedIconPath(icon.path);
-        }
-      }
-    } catch (error) {
-      console.error("Gagal memuat ikon:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return response.data;
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, pages) => (lastPage.length === LIMIT ? pages.length * LIMIT : undefined),
+    enabled: isOpen,
+    staleTime: Infinity,
+  });
 
-  /**
-   * Fungsi untuk menangani pencarian ikon
-   */
-  const handleSearch = () => {
-    if (query.trim() !== "") {
-      setOffset(0);
-      loadIcons(true);
-    }
-  };
+  const icons = data?.pages.flat() ?? [];
 
-  /**
-   * Fungsi untuk menangani perubahan input pencarian
-   * @param {React.ChangeEvent<HTMLInputElement>} e - Event input
-   */
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
 
-    // Reset timeout jika masih mengetik
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
-
-    // Lakukan pencarian setelah 3 detik tidak ada aktivitas mengetik
-    typingTimeoutRef.current = setTimeout(() => {
-      handleSearch();
-    }, 2000);
+    typingTimeoutRef.current = setTimeout(() => setSearchTerm(e.target.value.trim()), 500);
   };
 
-  /**
-   * Fungsi untuk menangani infinite scroll
-   */
   const handleScroll = () => {
-    if (!dropdownRef.current) return;
+    if (!dropdownRef.current || !hasNextPage || isFetching) return;
     const { scrollTop, scrollHeight, clientHeight } = dropdownRef.current;
     if (scrollTop + clientHeight >= scrollHeight - 10) {
-      loadIcons();
+      fetchNextPage();
     }
   };
 
-  /**
-   * Fungsi untuk menangani pemilihan ikon
-   * @param {string} iconName - Nama ikon yang dipilih
-   * @param {string} iconPath - Path ikon yang dipilih
-   */
-  const handleSelect = (iconName: string, iconPath: string) => {
-    onSelect(iconName); // Sekarang mengirimkan nama ikon, bukan path
-    setSelectedIconPath(iconPath); // Simpan path untuk ditampilkan dalam UI
+  const handleSelect = (iconName: string) => {
+    onSelect(iconName);
     setIsOpen(false);
   };
 
-  /**
-   * Fungsi untuk menangani klik di luar dropdown
-   * @param {MouseEvent} event - Event klik
-   */
-  const handleClickOutside = (event: MouseEvent) => {
-    if (
-      dropdownRef.current &&
-      !dropdownRef.current.contains(event.target as Node)
-    ) {
-      setIsOpen(false);
-    }
-  };
-
-  // Menambahkan event listener untuk klik di luar dropdown
   useEffect(() => {
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
     };
-  }, []);
 
-  // Memuat ikon saat dropdown dibuka atau saat selectedIcon berubah
-  useEffect(() => {
-    if (isOpen || (selectedIcon && !selectedIconPath)) {
-      loadIcons(true);
-    }
-  }, [isOpen, selectedIcon]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <div className="relative">
-      {/* Tombol untuk membuka dropdown */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -160,46 +92,36 @@ export default function IconPicker({
         Pilih Ikon
       </button>
 
-      {/* Dropdown untuk memilih ikon */}
       {isOpen && (
         <div
           ref={dropdownRef}
           className="absolute z-50 mt-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg px-4 pt-4 pb-[200px] max-h-64 overflow-y-auto w-64"
           onScroll={handleScroll}
         >
-          {/* Kotak pencarian */}
           <input
             type="text"
             value={query}
             onChange={handleQueryChange}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            onKeyDown={(e) => e.key === "Enter" && setSearchTerm(query.trim())}
             placeholder="Cari ikon..."
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white mb-4"
           />
 
-          {/* Daftar ikon */}
           <div className="grid grid-cols-4 gap-4">
             {icons.map((icon) => (
               <button
                 key={icon.name}
                 type="button"
-                onClick={() => handleSelect(icon.name, icon.path)}
+                onClick={() => handleSelect(icon.name)}
                 className="flex cursor-pointer items-center justify-center border border-gray-300 dark:border-gray-700 rounded-md p-2 hover:bg-gray-100 dark:hover:bg-gray-700"
                 title={icon.name}
               >
-                <Icon
-                  path={icon.path}
-                  size={1}
-                  className="text-gray-600 dark:text-gray-400"
-                />
+                <Icon path={icon.path} size={1} className="text-gray-600 dark:text-gray-400" />
               </button>
             ))}
           </div>
 
-          {/* Indikator loading */}
-          {loading && (
-            <p className="text-center text-sm text-gray-500 mt-4">Memuat...</p>
-          )}
+          {isFetching && <p className="text-center text-sm text-gray-500 mt-4">Memuat...</p>}
         </div>
       )}
     </div>

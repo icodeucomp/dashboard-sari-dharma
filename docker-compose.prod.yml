@@ -1,0 +1,11 @@
+name: saridharma-dashboard
+
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    env_file: .env.production
+    environment:
+      PORT: "4771"
+    ports:
+      - "127.0.0.1:18071:4771"

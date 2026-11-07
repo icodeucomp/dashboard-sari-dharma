@@ -1,9 +1,21 @@
 import type { NextConfig } from "next";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL ? new URL(process.env.NEXT_PUBLIC_API_URL) : null;
+
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: "standalone",
   images: {
     remotePatterns: [
+      ...(apiUrl
+        ? [
+            {
+              protocol: apiUrl.protocol.replace(":", "") as "http" | "https",
+              hostname: apiUrl.hostname,
+              port: apiUrl.port,
+              pathname: "/**",
+            },
+          ]
+        : []),
       {
         protocol: "http",
         hostname: "185.196.21.56",
@@ -17,6 +29,12 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "api.saridharma.com",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "8000",
+        pathname: "/**",
       },
       {
         protocol: "http",

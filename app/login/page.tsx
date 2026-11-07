@@ -6,71 +6,43 @@ import Logo from "@/app/assets/images/logo.webp";
 import Icon from '@mdi/react';
 import { mdiEye, mdiEyeOff, mdiEmail, mdiLock } from '@mdi/js';
 import { useRouter } from "next/navigation";
-import axios from "axios";
+import { useMutation } from "@tanstack/react-query";
+import { login } from "@/app/services/authService";
 
-// URL dasar API dari variabel lingkungan
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost';
-
-/**
- * Komponen halaman Login
- * @returns {JSX.Element} Komponen halaman login
- */
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  
+
   const router = useRouter();
 
-  /**
-   * Fungsi untuk menangani pengiriman form login
-   * @param {React.FormEvent} e - Event form
-   */
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
-    
-    try {
-      // Mengirim permintaan login ke API
-      const response = await axios.post(`${BASE_URL}/api/login`, {
-        email,
-        password
-      });
-      
-      // Memeriksa apakah respons berisi token dan user
-      if (response.data && response.data.token && response.data.user) {
-        // Menyimpan token di localStorage
-        localStorage.setItem('auth_token', response.data.token);
-        
-        // Menyimpan token di cookie untuk middleware
-        document.cookie = `auth_token=${response.data.token}; path=/; max-age=${60 * 60 * 24 * 7}`; // 7 hari
-        
-        // Selalu menyimpan data user di localStorage untuk ditampilkan di header
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        
-        // Redirect ke dashboard setelah login berhasil
-        const params = new URLSearchParams(window.location.search);
-        const from = params.get('from') || '/dashboard/layanan-unggulan';
-        router.push(from);
-      } else {
+  const loginMutation = useMutation({
+    mutationFn: () => login(email, password),
+    onSuccess: (data) => {
+      if (!data?.token || !data?.user) {
         setError("Format respons login tidak valid.");
+        return;
       }
-    } catch (error: any) {
-      console.error("Login error:", error);
-      if (error.response?.data?.message) {
-        setError(error.response.data.message);
-      } else if (error.message) {
-        setError(error.message);
-      } else {
-        setError("Login gagal. Silakan periksa kembali email dan password Anda.");
-      }
-    } finally {
-      setIsLoading(false);
-    }
+
+      localStorage.setItem("auth_token", data.token);
+      document.cookie = `auth_token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}`;
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      const from = new URLSearchParams(window.location.search).get("from") || "/dashboard/featured-services";
+      router.push(from);
+    },
+    onError: (error: any) => {
+      setError(error.response?.data?.message || error.message || "Login gagal. Silakan periksa kembali email dan password Anda.");
+    },
+  });
+  const isLoading = loginMutation.isPending;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    loginMutation.mutate();
   };
 
   return (
@@ -79,11 +51,12 @@ export default function Login() {
         <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg px-8 pt-6 pb-8 mb-4">
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
-              <Image 
-                src={Logo} 
-                alt="Klinik Sari Dharma Logo" 
-                width={100} 
-                height={100} 
+              <Image
+                priority
+                src={Logo}
+                alt="Klinik Sari Dharma Logo"
+                width={100}
+                height={100}
                 className="rounded-full object-cover"
               />
             </div>
@@ -94,13 +67,13 @@ export default function Login() {
               Login Backoffice
             </p>
           </div>
-          
+
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
               <span className="block sm:inline">{error}</span>
             </div>
           )}
-          
+
           <form onSubmit={handleSubmit}>
             <div className="mb-6 relative">
               <label htmlFor="email" className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">
@@ -121,7 +94,7 @@ export default function Login() {
                 />
               </div>
             </div>
-            
+
             <div className="mb-6">
               <label htmlFor="password" className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">
                 Password
@@ -144,15 +117,15 @@ export default function Login() {
                   className="absolute inset-y-0 right-0 flex items-center pr-3"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  <Icon 
-                    path={showPassword ? mdiEyeOff : mdiEye} 
-                    size={1} 
-                    className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" 
+                  <Icon
+                    path={showPassword ? mdiEyeOff : mdiEye}
+                    size={1}
+                    className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
                   />
                 </button>
               </div>
             </div>
-            
+
             <div className="mb-6 flex items-center justify-between">
               <div className="flex items-center">
                 <input
@@ -172,7 +145,7 @@ export default function Login() {
                 </a>
               </div>
             </div>
-            
+
             <div className="mb-6">
               <button
                 type="submit"
@@ -184,7 +157,7 @@ export default function Login() {
             </div>
           </form>
         </div>
-        
+
         <div className="text-center text-sm text-gray-600 dark:text-gray-400">
           © {new Date().getFullYear()} Klinik Sari Dharma. All rights reserved.
         </div>

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -25,16 +25,6 @@ import {
 } from "@mdi/js";
 import Logo from "@/app/assets/images/logo.webp";
 
-/**
- * Komponen item navigasi untuk sidebar
- * @param {string} icon - Path ikon dari MDI
- * @param {string} title - Judul menu
- * @param {string} href - URL tujuan
- * @param {boolean} isActive - Status aktif menu
- * @param {boolean} isOpen - Status sidebar terbuka/tertutup
- * @param {Array} subItems - Item sub menu
- * @returns {JSX.Element}
- */
 const NavItem = ({ icon, title, href, isActive, isOpen, subItems = [] }: {
   icon: string;
   title: string;
@@ -45,20 +35,17 @@ const NavItem = ({ icon, title, href, isActive, isOpen, subItems = [] }: {
 }) => {
   const pathname = usePathname();
 
-  // Cek apakah ada subitem yang aktif dengan lebih teliti
-  // Menggunakan startsWith untuk mendeteksi path seperti /dashboard/media/sertifikasi-penghargaan
-  // Hal ini akan menandai parent menu juga aktif
   const hasActiveChild = subItems.some((item) => pathname.startsWith(item.href));
-  
-  // State untuk mengatur apakah submenu terbuka
-  const [expanded, setExpanded] = useState(hasActiveChild);
 
-  // Selalu perbarui expanded state saat pathname berubah
-  useEffect(() => {
+  const [expanded, setExpanded] = useState(hasActiveChild);
+  const [lastPathname, setLastPathname] = useState(pathname);
+
+  if (pathname !== lastPathname) {
+    setLastPathname(pathname);
     if (hasActiveChild) {
-      setExpanded(true); // Buka submenu jika ada subitem aktif
+      setExpanded(true);
     }
-  }, [pathname, hasActiveChild]);
+  }
 
   return (
     <div className="mb-1">
@@ -98,10 +85,8 @@ const NavItem = ({ icon, title, href, isActive, isOpen, subItems = [] }: {
       {isOpen && expanded && subItems.length > 0 && (
         <div className="ml-4 mt-1">
           {subItems.map((item, index) => {
-            // Periksa aktif dengan exact match dan juga dengan startsWith
-            // untuk menangani halaman detail dengan slug dan parameter lainnya
             const isSubItemActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-            
+
             return (
               <Link
                 key={index}
@@ -123,55 +108,44 @@ const NavItem = ({ icon, title, href, isActive, isOpen, subItems = [] }: {
   );
 };
 
-/**
- * Komponen sidebar utama
- * @param {boolean} isOpen - Status sidebar terbuka/tertutup
- * @param {Function} toggleSidebar - Fungsi untuk toggle sidebar
- * @returns {JSX.Element}
- */
-export default function Sidebar({ isOpen, toggleSidebar }: { 
-  isOpen: boolean; 
+export default function Sidebar({ isOpen, toggleSidebar }: {
+  isOpen: boolean;
   toggleSidebar: () => void;
 }) {
   const pathname = usePathname();
 
-  // Daftar menu navigasi
   const navItems = [
-    // { title: "Dashboard", href: "/dashboard", icon: mdiViewDashboard },
-    { title: "Layanan Unggulan", href: "/dashboard/layanan-unggulan", icon: mdiStarOutline },
-    { title: "Layanan Spesialis", href: "/dashboard/layanan-spesialis", icon: mdiStethoscope },
-    { title: "Layanan & Fasilitas", href: "/dashboard/layanan-fasilitas", icon: mdiHospitalBuilding },
-    { title: "Jadwal Dokter", href: "/dashboard/jadwal-dokter", icon: mdiCalendarCheck },
-    { title: "Master Dokter", href: "/dashboard/master-dokter", icon: mdiDoctor },
-    { title: "Master Kategori", href: "/dashboard/master-kategori", icon: mdiTagMultiple },
-    // { title: "Reviews", href: "/dashboard/reviews", icon: mdiCommentTextOutline },
+    { title: "Layanan Unggulan", href: "/dashboard/featured-services", icon: mdiStarOutline },
+    { title: "Layanan Spesialis", href: "/dashboard/specialist-services", icon: mdiStethoscope },
+    { title: "Layanan & Fasilitas", href: "/dashboard/facility-services", icon: mdiHospitalBuilding },
+    { title: "Jadwal Dokter", href: "/dashboard/doctor-schedules", icon: mdiCalendarCheck },
+    { title: "Master Dokter", href: "/dashboard/doctors", icon: mdiDoctor },
+    { title: "Master Kategori", href: "/dashboard/categories", icon: mdiTagMultiple },
     {
       title: "Media & Informasi",
       icon: mdiFolderMultipleOutline,
       subItems: [
-        { title: "Paket Kesehatan", href: "/dashboard/media/paket-kesehatan", icon: mdiMedicalBag },
-        { title: "Artikel Kesehatan", href: "/dashboard/media/artikel-kesehatan", icon: mdiNewspaperVariantOutline },
-        { title: "Event & Community", href: "/dashboard/media/event-community", icon: mdiBullhornOutline },
-        { title: "Indikator Mutu", href: "/dashboard/media/indikator-mutu", icon: mdiChartLine },
-        { title: "Karir", href: "/dashboard/media/karir", icon: mdiAccountTie },
-        // { title: "Form Management", href: "/dashboard/media/form-management", icon: mdiFileDocumentOutline },
-        { title: "Konten Social Media", href: "/dashboard/media/konten-social-media", icon: mdiInstagram },
-        { title: "Sertifikasi & Penghargaan", href: "/dashboard/media/sertifikasi-penghargaan", icon: mdiCertificate },
+        { title: "Paket Kesehatan", href: "/dashboard/media/health-packages", icon: mdiMedicalBag },
+        { title: "Artikel Kesehatan", href: "/dashboard/media/health-articles", icon: mdiNewspaperVariantOutline },
+        { title: "Event & Community", href: "/dashboard/media/community-events", icon: mdiBullhornOutline },
+        { title: "Indikator Mutu", href: "/dashboard/media/quality-indicators", icon: mdiChartLine },
+        { title: "Karir", href: "/dashboard/media/careers", icon: mdiAccountTie },
+        { title: "Konten Social Media", href: "/dashboard/media/social-media-contents", icon: mdiInstagram },
+        { title: "Sertifikasi & Penghargaan", href: "/dashboard/media/certification-awards", icon: mdiCertificate },
       ],
     },
   ];
 
   return (
-    <aside 
+    <aside
       className={`
         fixed left-0 top-0 z-40 h-screen transition-all duration-300
-        ${isOpen ? 'w-64' : 'w-20'} 
+        ${isOpen ? 'w-64 translate-x-0' : 'w-20 -translate-x-full md:translate-x-0'}
         bg-[#C75000] dark:bg-gray-800 text-white
         flex flex-col
       `}
       style={{ maxHeight: '100vh' }}
     >
-      {/* Header dengan Logo */}
       <div className={`flex items-center justify-between h-16 px-4`}>
         <div className={`flex items-center justify-center w-full`}>
           <Image
@@ -182,10 +156,9 @@ export default function Sidebar({ isOpen, toggleSidebar }: {
             className="rounded-full"
           />
         </div>
-        
-        {/* Tombol tutup untuk mode mobile */}
+
         {isOpen && (
-          <button 
+          <button
             onClick={toggleSidebar}
             className="md:hidden text-white hover:text-gray-200 p-1"
             aria-label="Tutup Sidebar"
@@ -195,7 +168,6 @@ export default function Sidebar({ isOpen, toggleSidebar }: {
         )}
       </div>
 
-      {/* Menu Navigasi */}
       <nav className="p-4 flex-1 overflow-y-auto">
         {navItems.map((item, index) => (
           <NavItem
