@@ -3,6 +3,7 @@ name: saridharma-dashboard
 services:
   web:
     build: .
+    image: srdh-admin
     restart: unless-stopped
     env_file: .env.production
     environment:
