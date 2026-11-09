@@ -35,7 +35,6 @@ export interface DoctorScheduleItem {
   doctor_background: string;
   schedule: ScheduleItem[];
   education_career: EducationCareerItem[];
-  photo: string;
   created_at: string;
   updated_at: string;
   doctor?: Doctor;

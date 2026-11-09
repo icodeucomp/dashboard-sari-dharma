@@ -2,14 +2,13 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import Icon from "@mdi/react";
-import { mdiPencil, mdiTrashCan, mdiFilter, mdiMagnify } from "@mdi/js";
+
 import Pagination from "@/app/components/Pagination";
 import { usePaginatedList } from "@/app/hooks/usePaginatedList";
 import { useDoctorOptions, useSpecialistOptions } from "@/app/hooks/useOptions";
 import Modal from "@/app/components/Modal";
 import { getDoctorSchedule, deleteDoctorSchedule, DoctorScheduleItem } from "@/app/services/doctorScheduleService";
+import { PageHeader, AddButton, ListToolbar, EmptyState, LoadingState, CardActions } from "@/app/components/ui";
 
 export default function DoctorSchedule() {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -61,47 +60,10 @@ export default function DoctorSchedule() {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex flex-wrap gap-3 justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
-        <div className="flex flex-wrap items-center gap-4 min-w-0">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-            Jadwal Dokter
-          </h1>
-          <form
-            onSubmit={submitSearch}
-            className="flex items-center flex-1 max-w-md"
-          >
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Cari berdasarkan nama dokter"
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            />
-            <button
-              type="submit"
-              className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-r-md"
-            >
-              <Icon path={mdiMagnify} size={1} />
-            </button>
-          </form>
-        </div>
-        <div className="flex gap-4">
-          <button
-            onClick={openFilterModal}
-            className="flex cursor-pointer items-center border border-orange-600 hover:border-orange-700 hover:text-orange-700 text-orange-600 hover:bg-gray-100 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700 font-medium py-2 px-4 rounded-md"
-          >
-            <Icon path={mdiFilter} size={1} className="mr-2" />
-            Filter
-          </button>
-          <Link
-            href="/dashboard/doctor-schedules/create"
-            className="bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-md flex items-center"
-          >
-            + Tambah Baru
-          </Link>
-        </div>
-      </div>
+    <div className="page">
+      <PageHeader title="Jadwal Dokter" description="Jadwal praktik dokter per spesialis. Dokter dipilih dari Master Dokter." actions={<AddButton href="/dashboard/doctor-schedules/create" label="Tambah Baru" />} />
+
+      <ListToolbar search={{ value: searchInput, onChange: setSearchInput, onSubmit: submitSearch, placeholder: "Cari berdasarkan nama dokter" }} onFilter={openFilterModal} />
 
       <Modal
         isOpen={isFilterModalOpen}
@@ -117,7 +79,7 @@ export default function DoctorSchedule() {
             <select
               value={filterDoctorId}
               onChange={(e) => setFilterDoctorId(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="form-input"
               disabled={loadingDoctor}
             >
               <option value="">Semua Dokter</option>
@@ -136,7 +98,7 @@ export default function DoctorSchedule() {
             <select
               value={filterSpecialistId}
               onChange={(e) => setFilterSpecialistId(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="form-input"
               disabled={loadingSpecialist}
             >
               <option value="">Semua Spesialis</option>
@@ -148,16 +110,16 @@ export default function DoctorSchedule() {
             </select>
           </div>
 
-          <div className="flex justify-end space-x-2 pt-4">
+          <div className="flex justify-end gap-3 pt-4">
             <button
               onClick={resetFilter}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+              className="btn btn-outline"
             >
               Reset
             </button>
             <button
               onClick={applyFilter}
-              className="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-md"
+              className="btn btn-primary"
             >
               Terapkan Filter
             </button>
@@ -165,18 +127,10 @@ export default function DoctorSchedule() {
         </div>
       </Modal>
 
-      {isLoading && (
-        <div className="text-center py-8">
-          <p className="text-gray-600 dark:text-gray-400">Memuat data...</p>
-        </div>
-      )}
+      {isLoading && <LoadingState />}
 
       {!isLoading && (!doctorSchedule || doctorSchedule.length === 0) && (
-        <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-          <p className="text-gray-600 dark:text-gray-400">
-            Tidak ada jadwal dokter yang ditemukan.
-          </p>
-        </div>
+        <EmptyState title="Tidak ada jadwal dokter yang ditemukan" description="Data akan muncul di sini setelah ditambahkan." />
       )}
 
       {!isLoading && doctorSchedule.length > 0 && (
@@ -184,12 +138,12 @@ export default function DoctorSchedule() {
           {doctorSchedule.map((doctor) => (
             <div
               key={doctor.id}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-full"
+              className="resource-card"
             >
               <div className="h-48 overflow-hidden">
-                {doctor.photo ? (
+                {doctor.doctor?.photo ? (
                   <Image
-                    src={`${BASE_URL}/storage/${doctor.photo}`}
+                    src={`${BASE_URL}/storage/${doctor.doctor.photo}`}
                     alt={doctor.doctor?.name || "Dokter"}
                     width={300}
                     height={200}
@@ -205,7 +159,7 @@ export default function DoctorSchedule() {
               </div>
 
               <div className="p-4 flex-1 flex flex-col">
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                <h2 className="resource-card-title">
                   {doctor.doctor?.name || "Nama Dokter Tidak Tersedia"}
                 </h2>
                 <p className="text-sm text-orange-600 dark:text-orange-400 font-medium mb-2">
@@ -215,23 +169,7 @@ export default function DoctorSchedule() {
                   {doctor.doctor_background}
                 </p>
                 <div className="flex-1"></div>
-                <div className="flex gap-3 mt-4">
-                  <Link
-                    href={`/dashboard/doctor-schedules/edit/${doctor.id}`}
-                    className="flex-1 flex items-center justify-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 text-sm font-medium py-2 px-4 rounded-md"
-                  >
-                    Edit
-                    <Icon path={mdiPencil} size={0.8} className="ml-2" />
-                  </Link>
-                  <button
-                    onClick={() => handleDelete(doctor.id)}
-                    disabled={isDeleting}
-                    className="flex-1 flex items-center justify-center border border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700 text-sm font-medium py-2 px-4 rounded-md"
-                  >
-                    Hapus
-                    <Icon path={mdiTrashCan} size={0.8} className="ml-2" />
-                  </button>
-                </div>
+                <CardActions editHref={`/dashboard/doctor-schedules/edit/${doctor.id}`} onDelete={() => handleDelete(doctor.id)} disabled={isDeleting} />
               </div>
             </div>
           ))}

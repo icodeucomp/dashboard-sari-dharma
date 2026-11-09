@@ -6,7 +6,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCategoryOptions, useDoctorOptions } from "@/app/hooks/useOptions";
 import Icon from "@mdi/react";
 import { mdiUpload } from "@mdi/js";
-import Link from "next/link";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -18,6 +17,7 @@ import {
 import { createCategory } from "@/app/services/masterCategoryService";
 import { CategorySelect, OptionType } from "@/app/components/CreatableSelect";
 import Select from "react-select";
+import { PageHeader } from "@/app/components/ui";
 
 const WysiwygEditor = dynamic(() => import('@/app/components/WysiwygEditor'), {
   ssr: false,
@@ -139,32 +139,22 @@ function EditHealthArticleForm({ record }: { record: RecordType }) {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex flex-wrap gap-3 justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Edit Artikel Kesehatan
-        </h1>
-        <Link
-          href="/dashboard/media/health-articles"
-          className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md"
-        >
-          Kembali
-        </Link>
-      </div>
+    <div className="page">
+      <PageHeader title="Edit Artikel Kesehatan" description="Ubah data di bawah ini, lalu simpan perubahan." backHref="/dashboard/media/health-articles" />
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 border border-gray-200 dark:border-gray-700"
+        className="form-card"
       >
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="alert-error">
             {error}
           </div>
         )}
 
         <div className="mb-6">
           <div className="flex items-center mb-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 w-1/4">
+            <label className="form-label-block w-1/4">
               Foto Artikel Saat Ini
             </label>
             <div className="flex-1">
@@ -187,14 +177,14 @@ function EditHealthArticleForm({ record }: { record: RecordType }) {
           <div className="flex items-center">
             <label
               htmlFor="photo"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 w-1/4"
+              className="form-label-block w-1/4"
             >
               Upload Foto Baru
             </label>
-            <div className="flex items-center flex-1">
+            <div className="flex flex-wrap items-center gap-3 md:flex-1">
               <label
                 htmlFor="photo"
-                className={`flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md cursor-pointer ${
+                className={`btn btn-outline ${
                   loading ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               >
@@ -209,7 +199,7 @@ function EditHealthArticleForm({ record }: { record: RecordType }) {
                 className="hidden"
                 disabled={loading}
               />
-              <span className="ml-4 text-sm text-gray-500 dark:text-gray-400">
+              <span className="form-hint">
                 {thumbnail ? thumbnail.name : "max. 5mb"}
               </span>
             </div>
@@ -219,7 +209,7 @@ function EditHealthArticleForm({ record }: { record: RecordType }) {
         <div className="mb-6">
           <label
             htmlFor="category"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            className="form-label-block"
           >
             Kategori <span className="text-red-500">*</span>
           </label>
@@ -238,7 +228,7 @@ function EditHealthArticleForm({ record }: { record: RecordType }) {
         <div className="mb-6">
           <label
             htmlFor="title"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            className="form-label-block"
           >
             Judul <span className="text-red-500">*</span>
           </label>
@@ -247,7 +237,7 @@ function EditHealthArticleForm({ record }: { record: RecordType }) {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="form-input"
             placeholder="Masukkan judul artikel"
             disabled={loading}
           />
@@ -256,7 +246,7 @@ function EditHealthArticleForm({ record }: { record: RecordType }) {
         <div className="mb-12">
           <label
             htmlFor="content"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            className="form-label-block"
           >
             Konten <span className="text-red-500">*</span>
           </label>
@@ -313,29 +303,21 @@ function EditHealthArticleForm({ record }: { record: RecordType }) {
           />
         </div>
 
-        <div className="flex justify-end gap-4 mt-8">
+        <div className="form-actions">
           <button
             type="button"
             onClick={handleResetForm}
             disabled={loading}
-            className={`font-medium py-2 px-6 rounded-md ${
-              loading
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700"
-            }`}
+            className="btn btn-outline"
           >
             Reset
           </button>
           <button
             type="submit"
             disabled={loading}
-            className={`font-medium py-2 px-6 rounded-md ${
-              loading
-                ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                : "bg-orange-600 hover:bg-orange-700 text-white"
-            }`}
+            className="btn btn-primary"
           >
-            {loading ? "Saving..." : "Update"}
+            {loading ? "Menyimpan..." : "Simpan Perubahan"}
           </button>
         </div>
       </form>
@@ -360,7 +342,7 @@ export default function EditHealthArticle() {
   if (isError || !record) {
     return (
       <div className="p-6">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">Gagal memuat data.</div>
+        <div className="alert-error">Gagal memuat data.</div>
       </div>
     );
   }

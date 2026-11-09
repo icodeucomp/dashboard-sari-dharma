@@ -12,6 +12,7 @@ import {
   updateFeaturedService,
 } from "@/app/services/featuredService";
 import Image from "next/image";
+import { PageHeader } from "@/app/components/ui";
 
 const Editor = dynamic(() => import("@/app/components/WysiwygEditor"), {
   ssr: false,
@@ -83,27 +84,22 @@ function EditFeaturedServiceForm({ record }: { record: RecordType }) {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex flex-wrap gap-3 justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Edit Layanan Unggulan
-        </h1>
-        <div className="py-2 px-4 opacity-0">-</div>
-      </div>
+    <div className="page">
+      <PageHeader title="Edit Layanan Unggulan" description="Ubah data di bawah ini, lalu simpan perubahan." backHref="/dashboard/featured-services" />
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 border border-gray-200 dark:border-gray-700"
+        className="form-card"
       >
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="alert-error">
             {error}
           </div>
         )}
 
         {currentPhoto && (
-          <div className="mb-6">
-            <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+          <div className="form-row-top">
+            <label className="form-label">
               Foto Saat Ini
             </label>
             <div className="w-64 h-48 relative mb-2">
@@ -121,14 +117,14 @@ function EditFeaturedServiceForm({ record }: { record: RecordType }) {
           </div>
         )}
 
-        <div className="mb-6 flex items-center">
-          <label className="block text-gray-700 dark:text-gray-300 font-medium w-1/4">
+        <div className="form-row">
+          <label className="form-label">
             Ganti Foto
           </label>
-          <div className="flex items-center flex-1">
+          <div className="flex flex-wrap items-center gap-3 md:flex-1">
             <label
               htmlFor="photo"
-              className="flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md cursor-pointer"
+              className="btn btn-outline"
             >
               <Icon path={mdiUpload} size={1} className="mr-2" />
               Browse
@@ -140,16 +136,16 @@ function EditFeaturedServiceForm({ record }: { record: RecordType }) {
               onChange={handleFileChange}
               className="hidden"
             />
-            <span className="ml-4 text-sm text-gray-500 dark:text-gray-400">
+            <span className="form-hint">
               {photo ? photo.name : "max. 2MB (JPG, JPEG, PNG)"}
             </span>
           </div>
         </div>
 
-        <div className="mb-6 flex items-center">
+        <div className="form-row">
           <label
             htmlFor="name"
-            className="block text-gray-700 dark:text-gray-300 font-medium w-1/4"
+            className="form-label"
           >
             Nama Layanan <span className="text-red-500">*</span>
           </label>
@@ -158,7 +154,7 @@ function EditFeaturedServiceForm({ record }: { record: RecordType }) {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="form-input"
             placeholder="Masukkan nama layanan"
             required
           />
@@ -167,7 +163,7 @@ function EditFeaturedServiceForm({ record }: { record: RecordType }) {
         <div className="mb-6">
           <label
             htmlFor="description"
-            className="block text-gray-700 dark:text-gray-300 font-medium mb-2"
+            className="form-label-block"
           >
             Deskripsi
           </label>
@@ -178,29 +174,21 @@ function EditFeaturedServiceForm({ record }: { record: RecordType }) {
           />
         </div>
 
-        <div className="flex justify-end gap-4 mt-8">
+        <div className="form-actions">
           <button
             type="button"
             onClick={handleReset}
             disabled={loading}
-            className={`font-medium py-2 px-6 rounded-md ${
-              loading
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700"
-            }`}
+            className="btn btn-outline"
           >
             Reset
           </button>
           <button
             type="submit"
             disabled={loading}
-            className={`font-medium py-2 px-6 rounded-md ${
-              loading
-                ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                : "bg-orange-600 hover:bg-orange-700 text-white"
-            }`}
+            className="btn btn-primary"
           >
-            {loading ? "Saving..." : "Update"}
+            {loading ? "Menyimpan..." : "Simpan Perubahan"}
           </button>
         </div>
       </form>
@@ -225,7 +213,7 @@ export default function EditFeaturedService() {
   if (isError || !record) {
     return (
       <div className="p-6">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">Gagal memuat data.</div>
+        <div className="alert-error">Gagal memuat data.</div>
       </div>
     );
   }

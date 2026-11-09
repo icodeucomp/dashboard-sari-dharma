@@ -5,6 +5,8 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL ? new URL(process.env.NEXT_PUBLIC
 const nextConfig: NextConfig = {
   output: "standalone",
   images: {
+    // Local development serves images from localhost, which Next blocks by default. Never enabled in production.
+    dangerouslyAllowLocalIP: process.env.NODE_ENV !== "production",
     remotePatterns: [
       ...(apiUrl
         ? [

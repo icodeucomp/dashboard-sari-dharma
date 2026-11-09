@@ -9,6 +9,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useRecord } from "@/app/hooks/useRecord";
 import { useDoctorOptions } from "@/app/hooks/useOptions";
 import { getSpecialistServiceById, updateSpecialistService } from "@/app/services/specialistService";
+import { PageHeader } from "@/app/components/ui";
 
 const Editor = dynamic(() => import("@/app/components/WysiwygEditor"), { ssr: false });
 const IconPicker = dynamic(() => import("@/app/components/IconPicker"), { ssr: false });
@@ -91,25 +92,21 @@ function EditSpecialistServiceForm({ record }: { record: RecordType }) {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex flex-wrap gap-3 justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Edit Layanan Spesialis
-        </h1>
-      </div>
+    <div className="page">
+      <PageHeader title="Edit Layanan Spesialis" description="Ubah data di bawah ini, lalu simpan perubahan." backHref="/dashboard/specialist-services" />
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 border border-gray-200 dark:border-gray-700"
+        className="form-card"
       >
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="alert-error">
             {error}
           </div>
         )}
 
-        <div className="mb-6 flex items-center">
-          <label className="block text-gray-700 dark:text-gray-300 font-medium w-1/4">
+        <div className="form-row">
+          <label className="form-label">
             Pilih Ikon
           </label>
           <div className="flex-1">
@@ -117,10 +114,10 @@ function EditSpecialistServiceForm({ record }: { record: RecordType }) {
           </div>
         </div>
 
-        <div className="mb-6 flex items-center">
+        <div className="form-row">
           <label
             htmlFor="name"
-            className="block text-gray-700 dark:text-gray-300 font-medium w-1/4"
+            className="form-label"
           >
             Nama Layanan <span className="text-red-500">*</span>
           </label>
@@ -129,7 +126,7 @@ function EditSpecialistServiceForm({ record }: { record: RecordType }) {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="form-input"
             placeholder="Masukkan nama layanan"
             required
             disabled={loading}
@@ -139,7 +136,7 @@ function EditSpecialistServiceForm({ record }: { record: RecordType }) {
         <div className="mb-6">
           <label
             htmlFor="description"
-            className="block text-gray-700 dark:text-gray-300 font-medium mb-2"
+            className="form-label-block"
           >
             Deskripsi
           </label>
@@ -151,22 +148,22 @@ function EditSpecialistServiceForm({ record }: { record: RecordType }) {
         </div>
 
         {relatedDoctors.map((doctorId, index) => (
-          <div key={index} className="mb-6 flex items-center">
+          <div key={index} className="form-row">
             <label
-              className="block text-gray-700 dark:text-gray-300 font-medium w-1/4"
+              className="form-label"
             >
               Dokter Spesialis Terkait {index + 1} <span className="text-red-500">*</span>
             </label>
             <div className="flex-1 flex items-center gap-4">
               {loadingDoctor ? (
-                <div className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md dark:bg-gray-700">
+                <div className="form-input">
                   Memuat data dokter...
                 </div>
               ) : (
                 <select
                   value={doctorId}
                   onChange={(e) => handleDoctorChange(index, e.target.value)}
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="form-input"
                   required
                   disabled={loading}
                 >
@@ -184,13 +181,11 @@ function EditSpecialistServiceForm({ record }: { record: RecordType }) {
                 <button
                   type="button"
                   onClick={() => handleDeleteDoctor(index)}
-                  className={`flex items-center border border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700 font-medium py-2 px-4 rounded-md ${
-                    loading ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
+                  className="btn btn-danger"
                   disabled={loading}
                 >
-                  <Icon path={mdiDelete} size={0.8} className="mr-2" />
-                  Delete
+                  <Icon path={mdiDelete} size={0.8} />
+                  Hapus
                 </button>
               )}
             </div>
@@ -200,50 +195,38 @@ function EditSpecialistServiceForm({ record }: { record: RecordType }) {
           <button
             type="button"
             onClick={handleResetDoctor}
-            className={`flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md ${
-              loading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className="btn btn-outline"
             disabled={loading}
           >
-            <Icon path={mdiRestore} size={0.8} className="mr-2" />
+            <Icon path={mdiRestore} size={0.8} />
             Reset
           </button>
           <button
             type="button"
             onClick={handleAddDoctor}
-            className={`flex items-center bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-md ${
-              loading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className="btn btn-primary"
             disabled={loading}
           >
-            <Icon path={mdiPlus} size={0.8} className="mr-2" />
-            Add More
+            <Icon path={mdiPlus} size={0.8} />
+            Tambah Dokter
           </button>
         </div>
 
-        <div className="flex justify-end gap-4 mt-8">
+        <div className="form-actions">
           <button
             type="button"
             onClick={handleReset}
             disabled={loading}
-            className={`font-medium py-2 px-6 rounded-md ${
-              loading
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700"
-            }`}
+            className="btn btn-outline"
           >
             Reset
           </button>
           <button
             type="submit"
             disabled={loading}
-            className={`font-medium py-2 px-6 rounded-md ${
-              loading
-                ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                : "bg-orange-600 hover:bg-orange-700 text-white"
-            }`}
+            className="btn btn-primary"
           >
-            {loading ? "Saving..." : "Update"}
+            {loading ? "Menyimpan..." : "Simpan Perubahan"}
           </button>
         </div>
       </form>
@@ -268,7 +251,7 @@ export default function EditSpecialistService() {
   if (isError || !record) {
     return (
       <div className="p-6">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">Gagal memuat data.</div>
+        <div className="alert-error">Gagal memuat data.</div>
       </div>
     );
   }

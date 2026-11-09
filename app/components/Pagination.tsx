@@ -3,6 +3,13 @@
 import Icon from "@mdi/react";
 import { mdiChevronLeft, mdiChevronRight, mdiPageFirst, mdiPageLast } from "@mdi/js";
 
+// Literal class names on purpose: Tailwind cannot see names built from a variable.
+const ACTIVE_PAGE = {
+  orange: "bg-orange-600 text-white border-orange-600",
+  blue: "bg-blue-600 text-white border-blue-600",
+  green: "bg-green-600 text-white border-green-600",
+} as const;
+
 interface PaginationProps {
   currentPage: number;
   totalItems: number;
@@ -10,7 +17,7 @@ interface PaginationProps {
   onPageChange: (page: number) => void;
   showInfo?: boolean;
   className?: string;
-  activeColor?: string;
+  activeColor?: "orange" | "blue" | "green";
 }
 
 export default function Pagination({
@@ -42,7 +49,7 @@ export default function Pagination({
       onClick={() => paginate(number)}
       className={`h-8 w-8 flex items-center justify-center mx-1 rounded-md border ${
         isActive
-          ? `bg-${activeColor}-600 text-white border-${activeColor}-600`
+          ? ACTIVE_PAGE[activeColor]
           : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
       }`}
     >
@@ -53,9 +60,9 @@ export default function Pagination({
   if (totalPages <= 1) return null;
 
   return (
-    <div className={`mt-8 flex flex-col md:flex-row items-center justify-between ${className}`}>
+    <div className={`flex flex-col items-center justify-between gap-3 md:flex-row ${className || "mt-6"}`}>
       {showInfo && (
-        <div className="text-sm text-gray-700 mb-4 md:mb-0">
+        <div className="text-sm text-gray-600 dark:text-gray-300">
           {displayInfo}
         </div>
       )}

@@ -1,13 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import Icon from "@mdi/react";
-import { mdiPencil, mdiTrashCan, mdiFilter, mdiMagnify } from "@mdi/js";
+
 import Pagination from "@/app/components/Pagination";
 import { usePaginatedList } from "@/app/hooks/usePaginatedList";
 import Modal from "@/app/components/Modal";
 import { getMasterCategory, deleteMasterCategory, Category } from "@/app/services/masterCategoryService";
+import { PageHeader, AddButton, ListToolbar, EmptyState, LoadingState, RowActions } from "@/app/components/ui";
 
 export default function MasterCategory() {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -67,44 +66,10 @@ export default function MasterCategory() {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex flex-wrap gap-3 justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
-        <div className="flex flex-wrap items-center gap-4 min-w-0">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-            Master Kategori
-          </h1>
-          <form onSubmit={submitSearch} className="flex items-center flex-1 max-w-md">
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Cari kategori"
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            />
-            <button
-              type="submit"
-              className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-r-md"
-            >
-              <Icon path={mdiMagnify} size={1} />
-            </button>
-          </form>
-        </div>
-        <div className="flex gap-4">
-          <button
-            onClick={openFilterModal}
-            className="flex cursor-pointer items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md"
-          >
-            <Icon path={mdiFilter} size={1} className="mr-2" />
-            Filter
-          </button>
-          <Link
-            href="/dashboard/categories/create"
-            className="bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-md flex items-center"
-          >
-            + Tambah Kategori
-          </Link>
-        </div>
-      </div>
+    <div className="page">
+      <PageHeader title="Master Kategori" description="Kategori untuk artikel, paket kesehatan, event dan karir." actions={<AddButton href="/dashboard/categories/create" label="Tambah Kategori" />} />
+
+      <ListToolbar search={{ value: searchInput, onChange: setSearchInput, onSubmit: submitSearch, placeholder: "Cari kategori" }} onFilter={openFilterModal} />
 
       <Modal
         isOpen={isFilterModalOpen}
@@ -120,7 +85,7 @@ export default function MasterCategory() {
             <select
               value={filterFlag}
               onChange={(e) => setFilterFlag(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="form-input"
             >
               <option value="">Semua Flag</option>
               {flagOptions.map((option) => (
@@ -131,16 +96,16 @@ export default function MasterCategory() {
             </select>
           </div>
 
-          <div className="flex justify-end space-x-2 pt-4">
+          <div className="flex justify-end gap-3 pt-4">
             <button
               onClick={resetFilter}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+              className="btn btn-outline"
             >
               Reset
             </button>
             <button
               onClick={applyFilter}
-              className="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-md"
+              className="btn btn-primary"
             >
               Terapkan Filter
             </button>
@@ -148,91 +113,46 @@ export default function MasterCategory() {
         </div>
       </Modal>
 
-      {isLoading && (
-        <div className="text-center py-8">
-          <p className="text-gray-600 dark:text-gray-400">Memuat data...</p>
-        </div>
-      )}
+      {isLoading && <LoadingState />}
 
       {!isLoading && (!categoryList || categoryList.length === 0) && (
-        <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-          <p className="text-gray-600 dark:text-gray-400">
-            Tidak ada kategori yang ditemukan.
-          </p>
-        </div>
+        <EmptyState title="Tidak ada kategori yang ditemukan" description="Data akan muncul di sini setelah ditambahkan." />
       )}
 
       {!isLoading && categoryList.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="table-card">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-                  >
-                    ID
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                    className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                   >
                     Nama
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-                  >
-                    Page
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                    className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                   >
                     Flag
                   </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-                  >
-                    Aksi
-                  </th>
+                  <th scope="col" className="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Aksi</th>
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {categoryList.map((category) => (
                   <tr key={category.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {category.id}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       {category.name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {category.page}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
                         {getFlagLabel(category.flag)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">
-                      <div className="flex justify-center space-x-2">
-                        <Link
-                          href={`/dashboard/categories/edit/${category.id}`}
-                          className="text-orange-600 hover:text-orange-900 dark:text-orange-400 dark:hover:text-orange-300"
-                        >
-                          <Icon path={mdiPencil} size={1} />
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(category.id)}
-                          disabled={isDeleting}
-                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <Icon path={mdiTrashCan} size={1} />
-                        </button>
-                      </div>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <RowActions editHref={`/dashboard/categories/edit/${category.id}`} onDelete={() => handleDelete(category.id)} disabled={isDeleting} />
                     </td>
                   </tr>
                 ))}
@@ -247,6 +167,7 @@ export default function MasterCategory() {
             onPageChange={setPage}
             showInfo={true}
             activeColor="orange"
+            className="border-t border-gray-200 px-4 py-3 dark:border-gray-700"
           />
         </div>
       )}

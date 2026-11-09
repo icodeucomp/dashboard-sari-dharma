@@ -1,12 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import Icon from "@mdi/react";
-import { mdiPencil, mdiTrashCan, mdiMagnify } from "@mdi/js";
+
 import Pagination from "@/app/components/Pagination";
 import { usePaginatedList } from "@/app/hooks/usePaginatedList";
 import { getCareer, deleteCareer, CareerItem } from "@/app/services/careerService";
+import { PageHeader, AddButton, ListToolbar, EmptyState, LoadingState, CardActions } from "@/app/components/ui";
 
 export default function Career() {
   const {
@@ -29,60 +28,22 @@ export default function Career() {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex flex-wrap gap-3 justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
-        <div className="flex flex-wrap items-center gap-4 min-w-0">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-            Karir
-          </h1>
-          <form
-            onSubmit={submitSearch}
-            className="flex items-center flex-1 max-w-md"
-          >
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Cari berdasarkan divisi atau posisi"
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            />
-            <button
-              type="submit"
-              className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-r-md"
-            >
-              <Icon path={mdiMagnify} size={1} />
-            </button>
-          </form>
-        </div>
-        <Link
-          href="/dashboard/media/careers/create"
-          className="bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-md flex items-center"
-        >
-          + Tambah Baru
-        </Link>
-      </div>
+    <div className="page">
+      <PageHeader title="Karir" description="Lowongan kerja yang tampil di website." actions={<AddButton href="/dashboard/media/careers/create" label="Tambah Baru" />} />
 
-      {isLoading && (
-        <div className="text-center py-8">
-          <p className="text-gray-600 dark:text-gray-400">Memuat data...</p>
-        </div>
-      )}
+      <ListToolbar search={{ value: searchInput, onChange: setSearchInput, onSubmit: submitSearch, placeholder: "Cari berdasarkan divisi atau posisi" }} />
+
+      {isLoading && <LoadingState />}
 
       {!isLoading && (!career || career.length === 0) && (
-        <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-          <p className="text-gray-600 dark:text-gray-400">
-            Tidak ada karir yang ditemukan.
-          </p>
-        </div>
+        <EmptyState title="Tidak ada karir yang ditemukan" description="Data akan muncul di sini setelah ditambahkan." />
       )}
 
       {!isLoading && career.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-6">
           {career.map((item) => (
             <div
-              key={item.id}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden"
-            >
+              key={item.id} className="resource-card">
               <div className="relative">
                 <Image
                   src={`${BASE_URL}/storage/${item.photo}`}
@@ -98,28 +59,11 @@ export default function Career() {
                 )}
               </div>
 
-              <div className="p-4">
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+              <div className="resource-card-body">
+                <h2 className="resource-card-title">
                   {item.position}
                 </h2>
-                <div className="flex justify-between">
-                  <Link
-                    href={`/dashboard/media/careers/edit/${item.slug}/${item.id}`}
-                    className="flex items-center bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium py-2 px-4 rounded-md"
-                  >
-                    Edit
-                    <Icon path={mdiPencil} size={0.8} className="ml-2" />
-                  </Link>
-
-                  <button
-                    onClick={() => handleDelete(item.id)}
-                    disabled={isDeleting}
-                    className="flex cursor-pointer items-center border border-orange-600 text-red-600 hover:bg-orange-600 hover:text-white text-sm font-medium py-2 px-4 rounded-md"
-                  >
-                    Hapus
-                    <Icon path={mdiTrashCan} size={0.8} className="ml-2" />
-                  </button>
-                </div>
+                <CardActions editHref={`/dashboard/media/careers/edit/${item.slug}/${item.id}`} onDelete={() => handleDelete(item.id)} disabled={isDeleting} />
               </div>
             </div>
           ))}

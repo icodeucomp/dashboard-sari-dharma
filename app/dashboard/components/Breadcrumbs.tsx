@@ -36,7 +36,10 @@ export default function Breadcrumbs() {
     );
   }
 
-  const pathSegments = pathname.split('/').filter(segment => segment);
+  // On edit pages everything after "edit" is a slug and an encrypted id: not useful to show.
+  const allSegments = pathname.split('/').filter(segment => segment);
+  const editAt = allSegments.indexOf('edit');
+  const pathSegments = editAt >= 0 ? allSegments.slice(0, editAt + 1) : allSegments;
 
   const pathNames: Record<string, string> = {
     dashboard: 'Dashboard',

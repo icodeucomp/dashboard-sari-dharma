@@ -4,12 +4,12 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRecord } from "@/app/hooks/useRecord";
 import AsyncSelect from "react-select/async";
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
   getMasterCategoryById,
   updateMasterCategory,
 } from "@/app/services/masterCategoryService";
+import { PageHeader } from "@/app/components/ui";
 
 type RecordType = Awaited<ReturnType<typeof getMasterCategoryById>>["data"];
 
@@ -73,33 +73,23 @@ function EditMasterCategoryForm({ record }: { record: RecordType }) {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex flex-wrap gap-3 justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Edit Kategori
-        </h1>
-        <Link
-          href="/dashboard/categories"
-          className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md"
-        >
-          Kembali
-        </Link>
-      </div>
+    <div className="page">
+      <PageHeader title="Edit Kategori" description="Ubah data di bawah ini, lalu simpan perubahan." backHref="/dashboard/categories" />
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 border border-gray-200 dark:border-gray-700"
+        className="form-card"
       >
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="alert-error">
             {error}
           </div>
         )}
 
-        <div className="mb-6 flex items-center">
+        <div className="form-row">
           <label
             htmlFor="name"
-            className="block text-gray-700 dark:text-gray-300 font-medium w-1/4"
+            className="form-label"
           >
             Nama Kategori <span className="text-red-500">*</span>
           </label>
@@ -108,17 +98,17 @@ function EditMasterCategoryForm({ record }: { record: RecordType }) {
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="form-input"
             placeholder="Masukkan nama kategori"
             required
             disabled={loading}
           />
         </div>
 
-        <div className="mb-6 flex items-center">
+        <div className="form-row">
           <label
             htmlFor="page"
-            className="block text-gray-700 dark:text-gray-300 font-medium w-1/4"
+            className="form-label"
           >
             Page
           </label>
@@ -127,16 +117,16 @@ function EditMasterCategoryForm({ record }: { record: RecordType }) {
             id="page"
             value={page}
             onChange={(e) => setPage(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="form-input"
             placeholder="Masukkan page (opsional)"
             disabled={loading}
           />
         </div>
 
-        <div className="mb-6 flex items-center">
+        <div className="form-row">
           <label
             htmlFor="flag"
-            className="block text-gray-700 dark:text-gray-300 font-medium w-1/4"
+            className="form-label"
           >
             Flag <span className="text-red-500">*</span>
           </label>
@@ -165,29 +155,21 @@ function EditMasterCategoryForm({ record }: { record: RecordType }) {
           </div>
         </div>
 
-        <div className="flex justify-end gap-4 mt-8">
+        <div className="form-actions">
           <button
             type="button"
             onClick={handleResetForm}
             disabled={loading}
-            className={`font-medium py-2 px-6 rounded-md ${
-              loading
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700"
-            }`}
+            className="btn btn-outline"
           >
             Reset
           </button>
           <button
             type="submit"
             disabled={loading}
-            className={`font-medium py-2 px-6 rounded-md ${
-              loading
-                ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                : "bg-orange-600 hover:bg-orange-700 text-white"
-            }`}
+            className="btn btn-primary"
           >
-            {loading ? "Saving..." : "Update"}
+            {loading ? "Menyimpan..." : "Simpan Perubahan"}
           </button>
         </div>
       </form>
@@ -212,7 +194,7 @@ export default function EditMasterCategory() {
   if (isError || !record) {
     return (
       <div className="p-6">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">Gagal memuat data.</div>
+        <div className="alert-error">Gagal memuat data.</div>
       </div>
     );
   }

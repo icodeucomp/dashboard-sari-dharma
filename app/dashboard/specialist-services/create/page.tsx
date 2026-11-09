@@ -8,6 +8,7 @@ import Icon from "@mdi/react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createSpecialistService } from "@/app/services/specialistService";
+import { PageHeader } from "@/app/components/ui";
 
 export default function CreateSpecialistService() {
   const [name, setName] = useState("");
@@ -83,25 +84,21 @@ export default function CreateSpecialistService() {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex flex-wrap gap-3 justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Tambah Layanan Spesialis
-        </h1>
-      </div>
+    <div className="page">
+      <PageHeader title="Tambah Layanan Spesialis" description="Isi data di bawah ini, lalu simpan." backHref="/dashboard/specialist-services" />
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 border border-gray-200 dark:border-gray-700"
+        className="form-card"
       >
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="alert-error">
             {error}
           </div>
         )}
 
-        <div className="mb-6 flex items-center">
-          <label className="block text-gray-700 dark:text-gray-300 font-medium w-1/4">
+        <div className="form-row">
+          <label className="form-label">
             Pilih Ikon
           </label>
           <div className="flex-1">
@@ -109,10 +106,10 @@ export default function CreateSpecialistService() {
           </div>
         </div>
 
-        <div className="mb-6 flex items-center">
+        <div className="form-row">
           <label
             htmlFor="name"
-            className="block text-gray-700 dark:text-gray-300 font-medium w-1/4"
+            className="form-label"
           >
             Nama Layanan <span className="text-red-500">*</span>
           </label>
@@ -121,17 +118,17 @@ export default function CreateSpecialistService() {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="form-input"
             placeholder="Masukkan nama layanan"
             required
             disabled={loading}
           />
         </div>
 
-        <div className="mb-6 flex">
+        <div className="form-row-top">
           <label
             htmlFor="description"
-            className="block text-gray-700 dark:text-gray-300 font-medium w-1/4 pt-2"
+            className="form-label md:pt-2"
           >
             Deskripsi
           </label>
@@ -139,7 +136,7 @@ export default function CreateSpecialistService() {
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="form-input"
             rows={5}
             placeholder="Masukkan deskripsi layanan"
             disabled={loading}
@@ -147,22 +144,22 @@ export default function CreateSpecialistService() {
         </div>
 
         {relatedDoctors.map((doctorId, index) => (
-          <div key={index} className="mb-6 flex items-center">
+          <div key={index} className="form-row">
             <label
-              className="block text-gray-700 dark:text-gray-300 font-medium w-1/4"
+              className="form-label"
             >
               Dokter Spesialis Terkait {index + 1} <span className="text-red-500">*</span>
             </label>
             <div className="flex-1 flex items-center gap-4">
               {loadingDoctor ? (
-                <div className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md dark:bg-gray-700">
+                <div className="form-input">
                   Memuat data dokter...
                 </div>
               ) : (
                 <select
                   value={doctorId}
                   onChange={(e) => handleDoctorChange(index, e.target.value)}
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="form-input"
                   required
                   disabled={loading}
                 >
@@ -180,13 +177,11 @@ export default function CreateSpecialistService() {
                 <button
                   type="button"
                   onClick={() => handleDeleteDoctor(index)}
-                  className={`flex items-center border border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700 font-medium py-2 px-4 rounded-md ${
-                    loading ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
+                  className="btn btn-danger"
                   disabled={loading}
                 >
-                  <Icon path={mdiDelete} size={0.8} className="mr-2" />
-                  Delete
+                  <Icon path={mdiDelete} size={0.8} />
+                  Hapus
                 </button>
               )}
             </div>
@@ -196,50 +191,38 @@ export default function CreateSpecialistService() {
           <button
             type="button"
             onClick={handleResetDoctor}
-            className={`flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md ${
-              loading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className="btn btn-outline"
             disabled={loading}
           >
-            <Icon path={mdiRestore} size={0.8} className="mr-2" />
+            <Icon path={mdiRestore} size={0.8} />
             Reset
           </button>
           <button
             type="button"
             onClick={handleAddDoctor}
-            className={`flex items-center bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-md ${
-              loading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className="btn btn-primary"
             disabled={loading}
           >
-            <Icon path={mdiPlus} size={0.8} className="mr-2" />
-            Add More
+            <Icon path={mdiPlus} size={0.8} />
+            Tambah Dokter
           </button>
         </div>
 
-        <div className="flex justify-end gap-4 mt-8">
+        <div className="form-actions">
           <button
             type="button"
             onClick={handleResetForm}
             disabled={loading}
-            className={`font-medium py-2 px-6 rounded-md ${
-              loading
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700"
-            }`}
+            className="btn btn-outline"
           >
             Reset
           </button>
           <button
             type="submit"
             disabled={loading}
-            className={`font-medium py-2 px-6 rounded-md ${
-              loading
-                ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                : "bg-orange-600 hover:bg-orange-700 text-white"
-            }`}
+            className="btn btn-primary"
           >
-            {loading ? "Saving..." : "Save"}
+            {loading ? "Menyimpan..." : "Simpan"}
           </button>
         </div>
       </form>

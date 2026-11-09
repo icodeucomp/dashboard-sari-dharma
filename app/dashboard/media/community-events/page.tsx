@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import Icon from "@mdi/react";
-import { mdiPencil, mdiTrashCan, mdiMagnify, mdiCalendar, mdiFilter } from "@mdi/js";
+import { mdiCalendar } from "@mdi/js";
 import Pagination from "@/app/components/Pagination";
 import { usePaginatedList } from "@/app/hooks/usePaginatedList";
 import { useCategoryOptions } from "@/app/hooks/useOptions";
@@ -13,6 +12,7 @@ import { getCommunityEvent, deleteCommunityEvent, CommunityEventItem } from "@/a
 import moment from "moment";
 import 'moment/locale/id';
 import Select from 'react-select';
+import { PageHeader, AddButton, ListToolbar, EmptyState, LoadingState, CardActions } from "@/app/components/ui";
 
 export default function CommunityEvent() {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -66,44 +66,10 @@ export default function CommunityEvent() {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex flex-wrap gap-3 justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
-        <div className="flex flex-wrap items-center gap-4 min-w-0">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-            Event & Community
-          </h1>
-          <form onSubmit={submitSearch} className="flex items-center flex-1 max-w-md">
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Cari berdasarkan judul"
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            />
-            <button
-              type="submit"
-              className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-r-md"
-            >
-              <Icon path={mdiMagnify} size={1} />
-            </button>
-          </form>
-        </div>
-        <div className="flex gap-4">
-          <button
-            onClick={openFilterModal}
-            className="flex cursor-pointer items-center border border-orange-600 hover:border-orange-700 hover:text-orange-700 text-orange-600 hover:bg-gray-100 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700 font-medium py-2 px-4 rounded-md"
-          >
-            <Icon path={mdiFilter} size={1} className="mr-2" />
-            Filter
-          </button>
-          <Link
-            href="/dashboard/media/community-events/create"
-            className="bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-md flex items-center"
-          >
-            + Tambah Baru
-          </Link>
-        </div>
-      </div>
+    <div className="page">
+      <PageHeader title="Event & Community" description="Event dan kegiatan komunitas klinik." actions={<AddButton href="/dashboard/media/community-events/create" label="Tambah Baru" />} />
+
+      <ListToolbar search={{ value: searchInput, onChange: setSearchInput, onSubmit: submitSearch, placeholder: "Cari berdasarkan judul" }} onFilter={openFilterModal} />
 
       <Modal
         isOpen={isFilterModalOpen}
@@ -128,16 +94,16 @@ export default function CommunityEvent() {
             />
           </div>
 
-          <div className="flex justify-end space-x-2 pt-4">
+          <div className="flex justify-end gap-3 pt-4">
             <button
               onClick={resetFilter}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+              className="btn btn-outline"
             >
               Reset
             </button>
             <button
               onClick={applyFilter}
-              className="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-md"
+              className="btn btn-primary"
             >
               Terapkan Filter
             </button>
@@ -145,27 +111,17 @@ export default function CommunityEvent() {
         </div>
       </Modal>
 
-      {isLoading && (
-        <div className="text-center py-8">
-          <p className="text-gray-600 dark:text-gray-400">Memuat data...</p>
-        </div>
-      )}
+      {isLoading && <LoadingState />}
 
       {!isLoading && (!events || events.length === 0) && (
-        <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-          <p className="text-gray-600 dark:text-gray-400">
-            Tidak ada data event & community yang ditemukan.
-          </p>
-        </div>
+        <EmptyState title="Tidak ada data event & community yang ditemukan" description="Data akan muncul di sini setelah ditambahkan." />
       )}
 
       {!isLoading && events.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-6">
           {events.map((event) => (
             <div
-              key={event.id}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden"
-            >
+              key={event.id} className="resource-card">
               <Image
                 src={event.photo ? `${BASE_URL}/storage/${event.photo}` : "/placeholder-image.jpg"}
                 alt={event.title}
@@ -174,32 +130,15 @@ export default function CommunityEvent() {
                 className="w-full h-48 object-cover"
               />
 
-              <div className="p-4">
+              <div className="resource-card-body">
                 <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-3">
-                  <Icon path={mdiCalendar} size={0.8} className="mr-2" />
+                  <Icon path={mdiCalendar} size={0.8} />
                   {formatDate(event.created_at)}
                 </div>
                 <h2 className="text-sm md:text-md lg:text-lg leading-[25px] font-semibold text-gray-800 dark:text-white mb-4">
                   {event.title}
                 </h2>
-                <div className="flex justify-between">
-                  <Link
-                    href={`/dashboard/media/community-events/edit/${event.slug}/${event.id}`}
-                    className="flex items-center bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium py-2 px-4 rounded-md"
-                  >
-                    Edit
-                    <Icon path={mdiPencil} size={0.8} className="ml-2" />
-                  </Link>
-
-                  <button
-                    onClick={() => handleDelete(event.id)}
-                    disabled={isDeleting}
-                    className="flex cursor-pointer items-center border border-orange-600 text-red-600 hover:bg-orange-600 hover:text-white text-sm font-medium py-2 px-4 rounded-md"
-                  >
-                    Hapus
-                    <Icon path={mdiTrashCan} size={0.8} className="ml-2" />
-                  </button>
-                </div>
+                <CardActions editHref={`/dashboard/media/community-events/edit/${event.slug}/${event.id}`} onDelete={() => handleDelete(event.id)} disabled={isDeleting} />
               </div>
             </div>
           ))}

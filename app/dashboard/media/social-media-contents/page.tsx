@@ -5,6 +5,7 @@ import Icon from "@mdi/react";
 import { mdiPlus, mdiDelete, mdiContentSave } from "@mdi/js";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSocialMediaContent, updateSocialMediaContent } from "@/app/services/socialMediaContentService";
+import { PageHeader, LoadingState } from "@/app/components/ui";
 
 type SocialType = "youtube" | "instagram";
 
@@ -37,34 +38,34 @@ function LinksEditor({ type, initialLinks }: { type: SocialType; initialLinks: s
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+    <div className="form-card">
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="alert-error">
           {error}
         </div>
       )}
 
       <div>
         {links.map((link, index) => (
-          <div key={index} className="flex items-center gap-4 mb-4">
-            <label className="w-1/4 text-sm font-medium text-gray-700 dark:text-gray-300">
+          <div key={index} className="form-row">
+            <label className="form-label">
               Link {index + 1} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={link}
               onChange={(e) => handleChange(index, e.target.value)}
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="form-input"
               placeholder={`Masukkan link ${index + 1}`}
             />
             {index > 0 && (
               <button
                 type="button"
                 onClick={() => setLinks(links.filter((_, i) => i !== index))}
-                className="cursor-pointer flex items-center border border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700 font-medium py-2 px-4 rounded-md"
+                className="btn btn-danger"
               >
-                <Icon path={mdiDelete} size={0.8} className="mr-2" />
-                Delete
+                <Icon path={mdiDelete} size={0.8} />
+                Hapus
               </button>
             )}
           </div>
@@ -72,24 +73,22 @@ function LinksEditor({ type, initialLinks }: { type: SocialType; initialLinks: s
         <button
           type="button"
           onClick={() => setLinks([...links, ""])}
-          className="cursor-pointer flex items-center bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-md"
+          className="btn btn-primary"
         >
-          <Icon path={mdiPlus} size={0.8} className="mr-2" />
-          Add More
+          <Icon path={mdiPlus} size={0.8} />
+          Tambah Dokter
         </button>
       </div>
 
-      <div className="flex justify-end gap-4 mt-8">
+      <div className="form-actions">
         <button
           type="button"
           onClick={handleSave}
           disabled={saveMutation.isPending}
-          className={`cursor-pointer flex items-center bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-6 rounded-md ${
-            saveMutation.isPending ? "opacity-50 cursor-not-allowed" : ""
-          }`}
+          className="btn btn-primary"
         >
-          <Icon path={mdiContentSave} size={0.8} className="mr-2" />
-          {saveMutation.isPending ? "Saving..." : "Save"}
+          <Icon path={mdiContentSave} size={0.8} />
+          {saveMutation.isPending ? "Menyimpan..." : "Simpan"}
         </button>
       </div>
     </div>
@@ -106,17 +105,15 @@ export default function SocialMediaContent() {
   });
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
-        Konten Social Media
-      </h1>
+    <div className="page">
+      <PageHeader title="Konten Social Media" description="Link video YouTube dan postingan Instagram yang tampil di website." />
 
-      <div className="flex border-b border-gray-300 dark:border-gray-700 mb-6">
+      <div className="flex border-b border-gray-200 dark:border-gray-700">
         {TABS.map((tab) => (
           <button
             key={tab.type}
             onClick={() => setActiveTab(tab.type)}
-            className={`cursor-pointer px-6 py-2 font-medium ${
+            className={`px-6 py-2.5 text-sm font-semibold ${
               activeTab === tab.type
                 ? "text-orange-600 border-b-2 border-orange-600"
                 : "text-gray-600 dark:text-gray-400"
@@ -127,8 +124,8 @@ export default function SocialMediaContent() {
         ))}
       </div>
 
-      {isLoading && <p className="text-gray-600 dark:text-gray-400">Memuat data...</p>}
-      {isError && <p className="text-red-600">Gagal memuat data.</p>}
+      {isLoading && <LoadingState />}
+      {isError && <div className="alert-error">Gagal memuat data. Muat ulang halaman atau coba lagi nanti.</div>}
       {links && <LinksEditor key={`${activeTab}:${links.join("|")}`} type={activeTab} initialLinks={links.length > 0 ? links : [""]} />}
     </div>
   );

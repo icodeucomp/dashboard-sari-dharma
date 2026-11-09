@@ -4,11 +4,11 @@ import { useState } from "react";
 import { useRecord } from "@/app/hooks/useRecord";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
 import Image from "next/image";
 import Icon from "@mdi/react";
 import { mdiUpload } from "@mdi/js";
 import { getCareerById, updateCareer } from "@/app/services/careerService";
+import { PageHeader } from "@/app/components/ui";
 
 type RecordType = Awaited<ReturnType<typeof getCareerById>>["data"];
 
@@ -102,32 +102,22 @@ function EditCareerForm({ record }: { record: RecordType }) {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex flex-wrap gap-3 justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Edit Karir
-        </h1>
-        <Link
-          href="/dashboard/media/careers"
-          className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md"
-        >
-          Kembali
-        </Link>
-      </div>
+    <div className="page">
+      <PageHeader title="Edit Karir" description="Ubah data di bawah ini, lalu simpan perubahan." backHref="/dashboard/media/careers" />
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 border border-gray-200 dark:border-gray-700"
+        className="form-card"
       >
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="alert-error">
             {error}
           </div>
         )}
 
         {currentPhoto && (
-          <div className="mb-6 flex items-center">
-            <label className="w-1/4 text-sm font-medium text-gray-700 dark:text-gray-300">
+          <div className="form-row">
+            <label className="form-label">
               Foto Saat Ini
             </label>
             <div className="w-3/4">
@@ -144,21 +134,21 @@ function EditCareerForm({ record }: { record: RecordType }) {
           </div>
         )}
 
-        <div className="mb-6 flex items-center">
+        <div className="form-row">
           <label
             htmlFor="photo"
-            className="w-1/4 text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="form-label"
           >
             Upload Foto Baru
           </label>
-          <div className="w-3/4 flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4 md:flex-1">
             <label
               htmlFor="photo"
               className={`flex items-center cursor-pointer border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md ${
                 loading ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >
-              <Icon path={mdiUpload} size={0.8} className="mr-2" />
+              <Icon path={mdiUpload} size={0.8} />
               Browse
             </label>
             <input
@@ -178,10 +168,10 @@ function EditCareerForm({ record }: { record: RecordType }) {
           </div>
         </div>
 
-        <div className="mb-6 flex items-center">
+        <div className="form-row">
           <label
             htmlFor="division"
-            className="w-1/4 text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="form-label"
           >
             Divisi <span className="text-red-500">*</span>
           </label>
@@ -190,16 +180,16 @@ function EditCareerForm({ record }: { record: RecordType }) {
             type="text"
             value={division}
             onChange={(e) => setDivision(e.target.value)}
-            className="w-3/4 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="form-input"
             placeholder="Masukkan divisi"
             disabled={loading}
           />
         </div>
 
-        <div className="mb-6 flex items-center">
+        <div className="form-row">
           <label
             htmlFor="position"
-            className="w-1/4 text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="form-label"
           >
             Posisi <span className="text-red-500">*</span>
           </label>
@@ -208,16 +198,16 @@ function EditCareerForm({ record }: { record: RecordType }) {
             type="text"
             value={position}
             onChange={(e) => setPosition(e.target.value)}
-            className="w-3/4 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="form-input"
             placeholder="Masukkan posisi"
             disabled={loading}
           />
         </div>
 
-        <div className="mb-6 flex items-center">
+        <div className="form-row">
           <label
             htmlFor="applicationLink"
-            className="w-1/4 text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="form-label"
           >
             Link Pendaftaran <span className="text-red-500">*</span>
           </label>
@@ -226,35 +216,27 @@ function EditCareerForm({ record }: { record: RecordType }) {
             type="url"
             value={applicationLink}
             onChange={(e) => setApplicationLink(e.target.value)}
-            className="w-3/4 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="form-input"
             placeholder="Masukkan link pendaftaran (contoh: https://example.com)"
             disabled={loading}
           />
         </div>
 
-        <div className="flex justify-end gap-4 mt-8">
+        <div className="form-actions">
           <button
             type="button"
             onClick={handleResetForm}
             disabled={loading}
-            className={`font-medium py-2 px-6 rounded-md ${
-              loading
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700"
-            }`}
+            className="btn btn-outline"
           >
             Reset
           </button>
           <button
             type="submit"
             disabled={loading}
-            className={`font-medium py-2 px-6 rounded-md ${
-              loading
-                ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                : "bg-orange-600 hover:bg-orange-700 text-white"
-            }`}
+            className="btn btn-primary"
           >
-            {loading ? "Saving..." : "Update"}
+            {loading ? "Menyimpan..." : "Simpan Perubahan"}
           </button>
         </div>
       </form>
@@ -279,7 +261,7 @@ export default function EditCareer() {
   if (isError || !record) {
     return (
       <div className="p-6">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">Gagal memuat data.</div>
+        <div className="alert-error">Gagal memuat data.</div>
       </div>
     );
   }

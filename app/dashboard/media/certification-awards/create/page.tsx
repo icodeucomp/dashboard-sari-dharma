@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Icon from "@mdi/react";
 import { mdiUpload } from "@mdi/js";
 import { createCertificationAward } from "@/app/services/certificationAwardService";
+import { PageHeader } from "@/app/components/ui";
 
 export default function AddCertificationAward() {
   const [title, setTitle] = useState("");
@@ -52,27 +53,23 @@ export default function AddCertificationAward() {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex flex-wrap gap-3 justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Tambah Sertifikasi & Penghargaan
-        </h1>
-      </div>
+    <div className="page">
+      <PageHeader title="Tambah Sertifikasi & Penghargaan" description="Isi data di bawah ini, lalu simpan." backHref="/dashboard/media/certification-awards" />
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 border border-gray-200 dark:border-gray-700"
+        className="form-card"
       >
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="alert-error">
             {error}
           </div>
         )}
 
-        <div className="mb-6 flex items-center">
+        <div className="form-row">
           <label
             htmlFor="title"
-            className="w-1/4 text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="form-label"
           >
             Judul <span className="text-red-500">*</span>
           </label>
@@ -81,26 +78,26 @@ export default function AddCertificationAward() {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-3/4 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="form-input"
             placeholder="Masukkan judul sertifikasi"
           />
         </div>
 
-        <div className="mb-6 flex items-center">
+        <div className="form-row">
           <label
             htmlFor="file"
-            className="w-1/4 text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="form-label"
           >
             Upload PDF <span className="text-red-500">*</span>
           </label>
-          <div className="w-3/4 flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4 md:flex-1">
             <label
               htmlFor="file"
               className={`flex items-center cursor-pointer border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md ${
                 loading ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >
-              <Icon path={mdiUpload} size={0.8} className="mr-2" />
+              <Icon path={mdiUpload} size={0.8} />
               Browse
             </label>
             <input
@@ -120,21 +117,21 @@ export default function AddCertificationAward() {
           </div>
         </div>
 
-        <div className="mb-6 flex items-center">
+        <div className="form-row">
           <label
             htmlFor="photo"
-            className="w-1/4 text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="form-label"
           >
             Upload Foto
           </label>
-          <div className="w-3/4 flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4 md:flex-1">
             <label
               htmlFor="photo"
               className={`flex items-center cursor-pointer border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md ${
                 loading ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >
-              <Icon path={mdiUpload} size={0.8} className="mr-2" />
+              <Icon path={mdiUpload} size={0.8} />
               Browse
             </label>
             <input
@@ -154,25 +151,21 @@ export default function AddCertificationAward() {
           </div>
         </div>
 
-        <div className="flex justify-end gap-4 mt-8">
+        <div className="form-actions">
           <button
             type="button"
             onClick={handleReset}
             disabled={loading}
-            className={`border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-6 rounded-md ${
-              loading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className="btn btn-outline"
           >
             Reset
           </button>
           <button
             type="submit"
             disabled={loading}
-            className={`bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-6 rounded-md ${
-              loading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className="btn btn-primary"
           >
-            {loading ? "Saving..." : "Simpan"}
+            {loading ? "Menyimpan..." : "Simpan"}
           </button>
         </div>
       </form>

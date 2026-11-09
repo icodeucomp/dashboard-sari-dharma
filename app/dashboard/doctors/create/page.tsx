@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import Icon from "@mdi/react";
 import { mdiUpload } from "@mdi/js";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createMasterDoctor } from "@/app/services/masterDoctorService";
+import { PageHeader } from "@/app/components/ui";
 
 export default function CreateMasterDoctor() {
   const router = useRouter();
@@ -66,33 +66,23 @@ export default function CreateMasterDoctor() {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex flex-wrap gap-3 justify-between items-center mb-6 border-b border-gray-300 pb-[16px]">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Tambah Dokter Baru
-        </h1>
-        <Link
-          href="/dashboard/doctors"
-          className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md"
-        >
-          Kembali
-        </Link>
-      </div>
+    <div className="page">
+      <PageHeader title="Tambah Dokter Baru" description="Isi data di bawah ini, lalu simpan." backHref="/dashboard/doctors" />
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 border border-gray-200 dark:border-gray-700"
+        className="form-card"
       >
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="alert-error">
             {error}
           </div>
         )}
 
-        <div className="mb-6 flex items-center">
+        <div className="form-row">
           <label
             htmlFor="name"
-            className="block text-gray-700 dark:text-gray-300 font-medium w-1/4"
+            className="form-label"
           >
             Nama Dokter <span className="text-red-500">*</span>
           </label>
@@ -101,23 +91,23 @@ export default function CreateMasterDoctor() {
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="form-input"
             placeholder="Masukkan nama dokter"
             required
             disabled={loading}
           />
         </div>
 
-        <div className="mb-6 flex items-center">
+        <div className="form-row">
           <label
-            className="block text-gray-700 dark:text-gray-300 font-medium w-1/4"
+            className="form-label"
           >
             Upload Foto
           </label>
-          <div className="flex items-center flex-1">
+          <div className="flex flex-wrap items-center gap-3 md:flex-1">
             <label
               htmlFor="photo"
-              className={`flex items-center border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium py-2 px-4 rounded-md cursor-pointer ${
+              className={`btn btn-outline ${
                 loading ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >
@@ -132,35 +122,27 @@ export default function CreateMasterDoctor() {
               className="hidden"
               disabled={loading}
             />
-            <span className="ml-4 text-sm text-gray-500 dark:text-gray-400">
-              {photo ? photo.name : "max. 2mb"}
+            <span className="form-hint">
+              {photo ? photo.name : "max. 2mb. Foto ini tampil di halaman Jadwal Dokter."}
             </span>
           </div>
         </div>
 
-        <div className="flex justify-end gap-4 mt-8">
+        <div className="form-actions">
           <button
             type="button"
             onClick={handleResetForm}
             disabled={loading}
-            className={`font-medium py-2 px-6 rounded-md ${
-              loading
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700"
-            }`}
+            className="btn btn-outline"
           >
             Reset
           </button>
           <button
             type="submit"
             disabled={loading}
-            className={`font-medium py-2 px-6 rounded-md ${
-              loading
-                ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                : "bg-orange-600 hover:bg-orange-700 text-white"
-            }`}
+            className="btn btn-primary"
           >
-            {loading ? "Saving..." : "Simpan"}
+            {loading ? "Menyimpan..." : "Simpan"}
           </button>
         </div>
       </form>
